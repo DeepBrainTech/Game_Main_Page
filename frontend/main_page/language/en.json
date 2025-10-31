@@ -19,7 +19,9 @@
     "welcomeUser@": {
       "username": "Username"
     },
-    "sudokuBattle": "Sudoku Battle"
+    "sudokuBattle": "Sudoku Battle",
+    "startFogChess": "Start FogChess",
+    "failedToStartGame": "Failed to start game"
   },
   "login": {
     "title": "DeepBrain Tech",

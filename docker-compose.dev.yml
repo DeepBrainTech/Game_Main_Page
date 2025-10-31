@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: main-page-postgres-dev
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main_page_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - main-page-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI 后端服务（开发模式）
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: main-page-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=true
+      - ENVIRONMENT=development
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/main_page_db
+      - SECRET_KEY=dev-secret-key-change-in-production-please
+      # FogChess 短期令牌配置（与前端/游戏对接）
+      - FOG_CHESS_JWT_SECRET=dev-fog
+      - FOG_CHESS_JWT_AUD=fogchess
+      - FOG_CHESS_JWT_ISS=main-portal
+      - FOG_CHESS_TOKEN_EXPIRE_SECONDS=300
+    volumes:
+      # 开发模式：挂载代码目录以便热重载
+      - ./backend/api:/app
+      - /app/venv
+      - /app/__pycache__
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - main-page-network
+
+  # Next.js 前端服务（开发模式）
+  frontend:
+    build:
+      context: ./frontend/main_page
+      dockerfile: Dockerfile.dev
+    container_name: main-page-frontend-dev
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      # 与代码一致的 API 变量名
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+      # 向下兼容老变量名（若有旧代码依赖）
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      # FogChess 入口地址（本地或指向线上服务）
+      - NEXT_PUBLIC_FOGCHESS_URL=http://localhost:8080
+    volumes:
+      # 开发模式：挂载代码目录以便热重载
+      - ./frontend/main_page:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - main-page-network
+
+networks:
+  main-page-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

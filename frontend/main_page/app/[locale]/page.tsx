@@ -4,7 +4,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { getApiUrl } from "@/lib/api-config";
 
 export default function Home() {
   const router = useRouter();
@@ -19,7 +18,8 @@ export default function Home() {
     const token = localStorage.getItem("access_token");
     if (token) {
       // 验证 token 是否有效
-      fetch(getApiUrl("/api/auth/verify"), {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      fetch(`${apiBase}/api/auth/verify`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -56,16 +56,42 @@ export default function Home() {
     setUsername("");
   };
 
-  const handleSudokuBattle = () => {
-    const token = localStorage.getItem("access_token");
-    const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
-    let url = baseUrl;
-    if (token) {
-      // 使用 URL fragment 传递，避免出现在 Referer 中
-      url = `${baseUrl}#token=${encodeURIComponent(token)}&locale=${encodeURIComponent(locale)}`;
+  const handleFogChess = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      router.push(`/${locale}/login`);
+      return;
     }
-    // 在新标签页中打开
-    window.open(url, "_blank");
+
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      const r = await fetch(`${apiBase}/api/games/fogchess/token`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!r.ok) {
+        throw new Error("获取游戏令牌失败");
+      }
+      const data = await r.json();
+      const gameToken = data?.data?.game_token;
+      if (!gameToken) throw new Error("无效的游戏令牌响应");
+
+      const fogChessUrl = process.env.NEXT_PUBLIC_FOGCHESS_URL;
+      if (!fogChessUrl) throw new Error("未配置 NEXT_PUBLIC_FOGCHESS_URL");
+
+      // 使用 URL 片段避免落入服务端日志
+      window.location.href = `${fogChessUrl}#token=${encodeURIComponent(gameToken)}`;
+    } catch (e) {
+      console.error(e);
+      alert(t("home.failedToStartGame"));
+    }
+  };
+
+  const handleSudokuBattle = () => {
+    // 保留原始数独按钮逻辑（占位）
+    console.log("Sudoku Battle clicked");
   };
 
   return (
@@ -89,6 +115,12 @@ export default function Home() {
                   {t("home.welcomeUser", { username })}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={handleFogChess}
+                    className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+                  >
+                    {t("home.startFogChess")}
+                  </button>
                   <button
                     onClick={handleSudokuBattle}
                     className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
