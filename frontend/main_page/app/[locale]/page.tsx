@@ -3,6 +3,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { getApiUrl } from "@/lib/api-config";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Home() {
@@ -18,8 +19,7 @@ export default function Home() {
     const token = localStorage.getItem("access_token");
     if (token) {
       // 验证 token 是否有效
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-      fetch(`${apiBase}/api/auth/verify`, {
+      fetch(getApiUrl("/api/auth/verify"), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -64,8 +64,7 @@ export default function Home() {
     }
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-      const r = await fetch(`${apiBase}/api/games/fogchess/token`, {
+      const r = await fetch(getApiUrl("/api/games/fogchess/token"), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
