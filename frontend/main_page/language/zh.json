@@ -20,7 +20,7 @@
       "username": "用户名"
     },
     "sudokuBattle": "数独对战",
-    "startFogChess": "开始迷雾象棋",
+    "startFogChess": "迷雾象棋",
     "failedToStartGame": "启动游戏失败"
   },
   "login": {

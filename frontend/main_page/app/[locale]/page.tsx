@@ -89,8 +89,15 @@ export default function Home() {
   };
 
   const handleSudokuBattle = () => {
-    // 保留原始数独按钮逻辑（占位）
-    console.log("Sudoku Battle clicked");
+      // 保留原始数独按钮逻辑（占位）
+      console.log("Sudoku Battle clicked");
+    const token = localStorage.getItem("access_token");
+    const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
+    let url = baseUrl;
+    if (token) {
+      // 使用 URL fragment 传递，避免出现在 Referer 中
+      url = `${baseUrl}#token=${encodeURIComponent(token)}&locale=${encodeURIComponent(locale)}`;
+    }
   };
 
   return (
