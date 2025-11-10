@@ -59,5 +59,106 @@
   "auth": {
     "tokenInvalid": "Token 无效",
     "loginRequired": "请先登录"
+  },
+  "beforelogin": {
+    "hero": {
+      "title": "训练你的大脑。",
+      "subtitle": "有目的地玩耍。",
+      "description": "通过策略、专注和乐趣，探索 AI 驱动的认知训练。",
+      "watchDemo": "观看演示",
+      "signUpNow": "立即注册",
+      "logIn": "登录"
+    },
+    "games": {
+      "title": "探索我们的游戏",
+      "cognigo": {
+        "name": "CogniGo（量子围棋）",
+        "tagline": "学习围棋的艺术。与量子共舞。",
+        "description": "体验融合量子计算机制的古老围棋游戏，挑战你的战略思维。"
+      },
+      "fogOfWar": {
+        "name": "战争迷雾国际象棋",
+        "tagline": "黑暗中的国际象棋。未知中的策略。",
+        "description": "在有限的视野下掌握国际象棋，挑战你在不完整信息下做决策的能力。"
+      },
+      "sudoku": {
+        "name": "数独",
+        "tagline": "训练你的逻辑思维和数字推理能力。",
+        "description": "通过经典数独游戏提升你的逻辑推理、专注力和问题解决能力。"
+      },
+      "sudokuBattle": {
+        "name": "数独对战",
+        "tagline": "更聪明地解题。更努力地竞争。",
+        "description": "在实时多人对战中挑战数独谜题，测试你的逻辑和速度。"
+      },
+      "chess": {
+        "name": "国际象棋大师",
+        "tagline": "模式识别、记忆和分析。",
+        "description": "通过 AI 驱动的模式识别练习和战略思维提升你的国际象棋水平。"
+      },
+      "more": {
+        "name": "更多游戏",
+        "tagline": "发现更多认知训练游戏。",
+        "description": "探索我们完整的 AI 驱动认知训练游戏集合，旨在提升你的心智能力。"
+      }
+    },
+    "benefits": {
+      "title": "为什么选择这些游戏？",
+      "subtitle": "每个游戏都针对学习和发展所必需的核心认知技能。",
+      "strategicThinking": {
+        "title": "战略思维",
+        "game": "CogniGo（量子围棋）"
+      },
+      "adaptability": {
+        "title": "适应能力",
+        "game": "战争迷雾国际象棋"
+      },
+      "focus": {
+        "title": "专注力",
+        "game": "数独"
+      },
+      "memory": {
+        "title": "记忆力",
+        "game": "数独对战"
+      },
+      "patternRecognition": {
+        "title": "模式识别",
+        "game": "国际象棋大师"
+      }
+    },
+    "testimonials": {
+      "title": "用户评价",
+      "subtitle": "科学支持，家庭喜爱。",
+      "testimonial1": {
+        "text": "这些游戏经过科学设计，可以增强认知能力。我的战略思维有了显著提升！",
+        "author": "陈莎拉博士",
+        "position": "认知神经科学家"
+      },
+      "testimonial2": {
+        "text": "我的孩子们很喜欢玩 CogniGo！他们在玩乐中学习策略。他们的专注力明显提高了。",
+        "author": "玛丽亚·罗德里格斯",
+        "position": "三个孩子的家长"
+      },
+      "testimonial3": {
+        "text": "教育和娱乐的完美结合。这些游戏让大脑训练感觉像游戏一样。",
+        "author": "詹姆斯·威尔逊",
+        "position": "小学教师"
+      }
+    },
+    "cta": {
+      "title": "开始训练你的大脑",
+      "subtitle": "首周免费体验！",
+      "signUpNow": "立即注册",
+      "logIn": "登录"
+    },
+    "footer": {
+      "about": "关于",
+      "resources": "资源",
+      "help": "帮助",
+      "contact": "联系我们",
+      "privacy": "隐私",
+      "terms": "条款",
+      "copyright": "© 2025 DeepBrain Tech。保留所有权利。"
+    }
   }
 }

@@ -1,0 +1,81 @@
+services:
+  # PostgreSQL 数据库（开发环境）
+  postgres:
+    image: postgres:16-alpine
+    container_name: main-page-postgres-dev
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main_page_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - main-page-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI 后端服务（开发模式 - 支持热重载）
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: main-page-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=true
+      - ENVIRONMENT=development
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/main_page_db
+      - SECRET_KEY=dev-secret-key-change-in-production-please
+    volumes:
+      # 开发模式：挂载代码目录以便热重载
+      - ./backend/api:/app
+      - /app/venv
+      - /app/__pycache__
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - main-page-network-dev
+
+  # Next.js 前端服务（开发模式 - 支持热重载）
+  frontend:
+    image: node:20-alpine
+    container_name: main-page-frontend-dev
+    working_dir: /app
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - WATCHPACK_POLLING=true
+    volumes:
+      # 开发模式：挂载代码目录以便热重载
+      - ./frontend/main_page:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - main-page-network-dev
+
+networks:
+  main-page-network-dev:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+
