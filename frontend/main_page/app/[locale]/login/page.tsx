@@ -43,9 +43,8 @@ export default function LoginPage() {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("token_expires_in", String(data.expires_in));
 
-      // 跳转到首页
-      router.push(`/${locale}`);
-      router.refresh();
+      // 登录成功，直接跳转到 home 页面
+      router.push(`/${locale}/home`);
     } catch (err: any) {
       setError(err.message || t("login.loginFailed"));
     } finally {
