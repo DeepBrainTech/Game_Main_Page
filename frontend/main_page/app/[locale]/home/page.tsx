@@ -59,6 +59,43 @@ export default function HomePage() {
     router.push(`/`);
   };
 
+  const handleFogChess = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    try {
+      const response = await fetch(getApiUrl("/api/games/fogchess/token"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("获取游戏令牌失败");
+      }
+
+      const data = await response.json();
+      const gameToken = data?.data?.game_token;
+      if (!gameToken) {
+        throw new Error("无效的游戏令牌响应");
+      }
+
+      const fogChessUrl = process.env.NEXT_PUBLIC_FOGCHESS_URL;
+      if (!fogChessUrl) {
+        throw new Error("未配置 NEXT_PUBLIC_FOGCHESS_URL");
+      }
+
+      window.location.href = `${fogChessUrl}#token=${encodeURIComponent(gameToken)}`;
+    } catch (error) {
+      console.error(error);
+      alert(tHome("failedToStartGame"));
+    }
+  };
+
   const handleSudokuBattle = () => {
     const token = localStorage.getItem("access_token");
     const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
@@ -98,6 +135,12 @@ export default function HomePage() {
               {tHome("welcomeUser", { username })}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={handleFogChess}
+                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+              >
+                {tHome("startFogChess")}
+              </button>
               <button
                 onClick={handleSudokuBattle}
                 className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"

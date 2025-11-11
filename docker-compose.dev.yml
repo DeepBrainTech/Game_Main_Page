@@ -36,6 +36,11 @@ services:
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/main_page_db
       - SECRET_KEY=dev-secret-key-change-in-production-please
+      # FogChess 短期令牌配置
+      - FOG_CHESS_JWT_SECRET=dev-fog
+      - FOG_CHESS_JWT_AUD=fogchess
+      - FOG_CHESS_JWT_ISS=main-portal
+      - FOG_CHESS_TOKEN_EXPIRE_SECONDS=300
     volumes:
       # 开发模式：挂载代码目录以便热重载
       - ./backend/api:/app
@@ -59,7 +64,11 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      # 与代码一致的 API 变量名
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      # FogChess 前端入口（本地或指向线上）
+      - NEXT_PUBLIC_FOGCHESS_URL=http://localhost:8080
       - WATCHPACK_POLLING=true
     volumes:
       # 开发模式：挂载代码目录以便热重载
