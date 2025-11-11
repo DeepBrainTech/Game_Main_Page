@@ -96,16 +96,40 @@ export default function HomePage() {
     }
   };
 
-  const handleSudokuBattle = () => {
-    const token = localStorage.getItem("access_token");
-    const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
-    let url = baseUrl;
-    if (token) {
-      // 使用 URL fragment 传递，避免出现在 Referer 中
-      url = `${baseUrl}#token=${encodeURIComponent(token)}&locale=${encodeURIComponent(locale)}`;
+  const handleSudokuBattle = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      router.push(`/${locale}/login`);
+      return;
     }
-    // 在新标签页中打开
-    window.open(url, "_blank");
+
+    try {
+      const response = await fetch(getApiUrl("/api/games/sudoku/token"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("获取游戏令牌失败");
+      }
+
+      const data = await response.json();
+      const gameToken = data?.data?.game_token;
+      if (!gameToken) {
+        throw new Error("无效的游戏令牌响应");
+      }
+
+      const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
+      const url = `${baseUrl}#token=${encodeURIComponent(gameToken)}&locale=${encodeURIComponent(locale)}`;
+      
+      // 在新标签页中打开
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error(error);
+      alert(tHome("failedToStartGame"));
+    }
   };
 
   if (loading) {

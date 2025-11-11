@@ -28,6 +28,13 @@ FOG_CHESS_AUD = os.getenv("FOG_CHESS_JWT_AUD", "fogchess")
 FOG_CHESS_ISS = os.getenv("FOG_CHESS_JWT_ISS", "main-portal")
 FOG_CHESS_TOKEN_EXPIRE_SECONDS = int(os.getenv("FOG_CHESS_TOKEN_EXPIRE_SECONDS", "300"))
 
+# Sudoku 专用令牌配置
+SUDOKU_SECRET = os.getenv("SUDOKU_JWT_SECRET", "change-this-sudoku-secret")
+SUDOKU_ALG = os.getenv("SUDOKU_JWT_ALG", "HS256")
+SUDOKU_AUD = os.getenv("SUDOKU_JWT_AUD", "sudoku-battle")
+SUDOKU_ISS = os.getenv("SUDOKU_JWT_ISS", "main-portal")
+SUDOKU_TOKEN_EXPIRE_SECONDS = int(os.getenv("SUDOKU_TOKEN_EXPIRE_SECONDS", "300"))
+
 # 密码加密
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -71,6 +78,21 @@ def create_fogchess_token(claims: Dict[str, Any], expires_seconds: Optional[int]
         "aud": FOG_CHESS_AUD,
     })
     return jwt.encode(to_encode, FOG_CHESS_SECRET, algorithm=FOG_CHESS_ALG)
+
+
+def create_sudoku_token(claims: Dict[str, Any], expires_seconds: Optional[int] = None) -> str:
+    """创建 Sudoku 短期访问令牌
+    包含必要的 aud/iss，默认 300s 过期。
+    """
+    to_encode = claims.copy()
+    expire_sec = expires_seconds or SUDOKU_TOKEN_EXPIRE_SECONDS
+    expire = datetime.utcnow() + timedelta(seconds=expire_sec)
+    to_encode.update({
+        "exp": expire,
+        "iss": SUDOKU_ISS,
+        "aud": SUDOKU_AUD,
+    })
+    return jwt.encode(to_encode, SUDOKU_SECRET, algorithm=SUDOKU_ALG)
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
