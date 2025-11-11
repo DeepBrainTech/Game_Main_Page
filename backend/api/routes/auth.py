@@ -52,10 +52,23 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
+    # 自动生成 token，实现注册后自动登录
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": new_user.username},
+        expires_delta=access_token_expires
+    )
+    
     return APIResponse(
         success=True,
         message="注册成功",
-        data={"user_id": new_user.id, "username": new_user.username}
+        data={
+            "user_id": new_user.id,
+            "username": new_user.username,
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        }
     )
 
 
