@@ -103,9 +103,9 @@ export default function Home() {
     {
       key: "more",
       image: "/images/game-more.jpg",
-      buttonColor: "bg-gray-500",
+      buttonColor: "bg-[#4C566A]",
       titleColor: "text-gray-800",
-      taglineColor: "text-gray-600",
+      taglineColor: "text-[#B48EAD]",
       descriptionColor: "text-gray-600",
       linkUrl: `/${locale}/login`,
     },

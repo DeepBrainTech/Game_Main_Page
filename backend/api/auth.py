@@ -2,7 +2,7 @@
 认证相关工具函数
 """
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -20,6 +20,13 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7天
+
+# FogChess 专用令牌配置（建议使用不同密钥，或改用 RS256 公私钥对）
+FOG_CHESS_SECRET = os.getenv("FOG_CHESS_JWT_SECRET", "change-this-fogchess-secret")
+FOG_CHESS_ALG = os.getenv("FOG_CHESS_JWT_ALG", "HS256")
+FOG_CHESS_AUD = os.getenv("FOG_CHESS_JWT_AUD", "fogchess")
+FOG_CHESS_ISS = os.getenv("FOG_CHESS_JWT_ISS", "main-portal")
+FOG_CHESS_TOKEN_EXPIRE_SECONDS = int(os.getenv("FOG_CHESS_TOKEN_EXPIRE_SECONDS", "300"))
 
 # 密码加密
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -49,6 +56,21 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_fogchess_token(claims: Dict[str, Any], expires_seconds: Optional[int] = None) -> str:
+    """创建 FogChess 短期访问令牌
+    包含必要的 aud/iss，默认 300s 过期。
+    """
+    to_encode = claims.copy()
+    expire_sec = expires_seconds or FOG_CHESS_TOKEN_EXPIRE_SECONDS
+    expire = datetime.utcnow() + timedelta(seconds=expire_sec)
+    to_encode.update({
+        "exp": expire,
+        "iss": FOG_CHESS_ISS,
+        "aud": FOG_CHESS_AUD,
+    })
+    return jwt.encode(to_encode, FOG_CHESS_SECRET, algorithm=FOG_CHESS_ALG)
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:

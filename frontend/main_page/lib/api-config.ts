@@ -3,7 +3,9 @@
  * 使用环境变量 NEXT_PUBLIC_API_URL，如果没有设置则使用本地开发默认值
  */
 export const API_BASE_URL = 
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:8000';
 
 /**
  * 获取完整的 API 端点 URL
