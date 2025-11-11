@@ -35,8 +35,26 @@ export default function HeroSection({ onWatchDemo }: HeroSectionProps) {
               block: "center"
             });
           }}
-          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition-colors shadow-lg"
+          className="px-6 py-3 bg-[#A3BE8C] hover:bg-[#8FA87A] text-white rounded-full font-medium transition-colors shadow-md inline-flex items-center gap-2 mx-auto"
         >
+          {/* 播放图标 */}
+          <svg 
+            width="16" 
+            height="16" 
+            viewBox="0 0 16 16" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="flex-shrink-0"
+          >
+            <path 
+              d="M3 2L13 8L3 14V2Z" 
+              stroke="white" 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
           {t("watchDemo")}
         </button>
       </div>
