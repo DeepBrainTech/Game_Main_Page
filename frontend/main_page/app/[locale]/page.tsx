@@ -105,7 +105,7 @@ export default function Home() {
       image: "/images/game-more.jpg",
       buttonColor: "bg-[#4C566A]",
       titleColor: "text-gray-800",
-      taglineColor: "text-[#B48EAD]",
+      taglineColor: "text-[#4C566A]",
       descriptionColor: "text-gray-600",
       linkUrl: `/${locale}/login`,
     },
@@ -166,7 +166,7 @@ export default function Home() {
       </section>
 
       {/* Benefits Section - 使用 BenefitCard 组件 */}
-      <section className="py-16 px-6 bg-[#f5f1e8]">
+      <section className="py-16 px-6 bg-[#FEF6EC]">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">
             {t("benefits.title")}

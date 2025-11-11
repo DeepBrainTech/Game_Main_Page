@@ -73,8 +73,18 @@ export default function RegisterPage() {
         throw new Error(errorMessage);
       }
 
-      // 注册成功，跳转到登录页面
-      router.push(`/${locale}/login?registered=true`);
+      // 注册成功，自动登录
+      const result = await response.json();
+      
+      // 后端返回的数据在 result.data 中
+      if (result.data && result.data.access_token) {
+        localStorage.setItem("access_token", result.data.access_token);
+        localStorage.setItem("token_expires_in", String(result.data.expires_in || 3600));
+        router.push(`/${locale}/home`);
+      } else {
+        // 如果没有 token，跳转到登录页
+        router.push(`/${locale}/login?registered=true`);
+      }
     } catch (err) {
       // 错误已在上面的 if 中设置
       if (!error) {
