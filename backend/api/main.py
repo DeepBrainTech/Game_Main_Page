@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 # 导入路由
-from routes import auth
+from routes import auth, games
 from database import init_db
 
 # 创建 FastAPI 应用实例
@@ -45,6 +45,7 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(auth.router)
+app.include_router(games.router)
 
 
 @app.on_event("startup")
