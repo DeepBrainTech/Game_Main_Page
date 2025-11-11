@@ -1,18 +1,29 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { getApiUrl } from "@/lib/api-config";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { getApiUrl } from "@/lib/api-config";
+// 导入着陆页组件
+import {
+  HeroSection,
+  GameCard,
+  BenefitCard,
+  TestimonialCard,
+  CTASection,
+  LandingFooter,
+} from "@/components/landing";
 
+/**
+ * 主页 - 着陆页
+ * 如果用户已登录，自动重定向到 /home
+ */
 export default function Home() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
-  const t = useTranslations();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
+  const t = useTranslations("beforelogin");
 
   useEffect(() => {
     // 检查是否已登录
@@ -26,140 +37,184 @@ export default function Home() {
       })
         .then((res) => {
           if (res.ok) {
-            return res.json();
+            // Token 有效，重定向到 home 页面
+            router.push(`/${locale}/home`);
+          } else {
+            // Token 无效，清除
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("token_expires_in");
           }
-          throw new Error("Token 无效");
-        })
-        .then((data) => {
-          setIsLoggedIn(true);
-          setUsername(data.data?.username || "");
         })
         .catch(() => {
+          // 验证失败，清除 token
           localStorage.removeItem("access_token");
-          setIsLoggedIn(false);
+          localStorage.removeItem("token_expires_in");
         });
     }
-  }, []);
+  }, [locale, router]);
 
-  const handleLogin = () => {
-    router.push(`/${locale}/login`);
-  };
+  // 游戏数据配置
+  const games = [
+    {
+      key: "cognigo",
+      image: "/images/game-cognigo.jpg",
+      buttonColor: "bg-[#5E81AC]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#5E81AC]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+    {
+      key: "fogOfWar",
+      image: "/images/game-fog-of-war.jpg",
+      buttonColor: "bg-[#D08770]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#D08770]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+    {
+      key: "sudoku",
+      image: "/images/game-sudoku.jpg",
+      buttonColor: "bg-[#A3BE8C]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#A3BE8C]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+    {
+      key: "sudokuBattle",
+      image: "/images/game-sudoku.jpg",
+      buttonColor: "bg-[#EEC643]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#EEC643]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+    {
+      key: "chess",
+      image: "/images/game-chess.jpg",
+      buttonColor: "bg-[#5E81AC]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#5E81AC]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+    {
+      key: "more",
+      image: "/images/game-more.jpg",
+      buttonColor: "bg-[#4C566A]",
+      titleColor: "text-gray-800",
+      taglineColor: "text-[#B48EAD]",
+      descriptionColor: "text-gray-600",
+      linkUrl: `/${locale}/login`,
+    },
+  ];
 
-  const handleRegister = () => {
-    router.push(`/${locale}/register`);
-  };
+  // 核心能力数据配置
+  const benefits = [
+    { key: "strategicThinking", icon: "🧠", color: "bg-blue-100 text-blue-600" },
+    { key: "adaptability", icon: "🔄", color: "bg-orange-100 text-orange-600" },
+    { key: "focus", icon: "🎯", color: "bg-green-100 text-green-600" },
+    { key: "memory", icon: "🧩", color: "bg-yellow-100 text-yellow-600" },
+    { key: "patternRecognition", icon: "🔍", color: "bg-indigo-100 text-indigo-600" },
+  ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("token_expires_in");
-    setIsLoggedIn(false);
-    setUsername("");
-  };
-
-  const handleFogChess = async () => {
-    const accessToken = localStorage.getItem("access_token");
-    if (!accessToken) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-
-    try {
-      const r = await fetch(getApiUrl("/api/games/fogchess/token"), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      if (!r.ok) {
-        throw new Error("获取游戏令牌失败");
-      }
-      const data = await r.json();
-      const gameToken = data?.data?.game_token;
-      if (!gameToken) throw new Error("无效的游戏令牌响应");
-
-      const fogChessUrl = process.env.NEXT_PUBLIC_FOGCHESS_URL;
-      if (!fogChessUrl) throw new Error("未配置 NEXT_PUBLIC_FOGCHESS_URL");
-
-      // 使用 URL 片段避免落入服务端日志
-      window.location.href = `${fogChessUrl}#token=${encodeURIComponent(gameToken)}`;
-    } catch (e) {
-      console.error(e);
-      alert(t("home.failedToStartGame"));
-    }
-  };
-
-  const handleSudokuBattle = () => {
-      // 保留原始数独按钮逻辑（占位）
-      console.log("Sudoku Battle clicked");
-    const token = localStorage.getItem("access_token");
-    const baseUrl = "https://sudoku-battle.deepbraintechnology.com/";
-    let url = baseUrl;
-    if (token) {
-      // 使用 URL fragment 传递，避免出现在 Referer 中
-      url = `${baseUrl}#token=${encodeURIComponent(token)}&locale=${encodeURIComponent(locale)}`;
-    }
-  };
+  // 用户评价数据配置
+  const testimonials = [
+    { key: "testimonial1" },
+    { key: "testimonial2" },
+    { key: "testimonial3" },
+  ];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start relative">
-        {/* 语言切换器 */}
-        <div className="absolute top-4 right-4">
+    <div className="min-h-screen bg-[#FEF6EC] font-sans">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">🧠 DeepBrainTech Presents</span>
+          </div>
           <LanguageSwitcher />
         </div>
-        
-        <div className="flex flex-col items-center gap-8 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-5xl font-bold leading-tight tracking-tight text-black dark:text-zinc-50">
-            {t("home.title")}
-          </h1>
+      </header>
+
+      {/* Hero Section - 使用组件 */}
+      <HeroSection />
+
+      {/* Games Section - 使用 GameCard 组件 */}
+      <section className="py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl md:text-5xl text-center mb-12 text-[#2C3539]" style={{ textShadow: '0 4px 6px rgba(0, 0, 0, 0.3)' }}>
+            {t("games.title")}
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {games.map((game) => (
+              <GameCard
+                key={game.key}
+                gameKey={game.key}
+                image={game.image}
+                buttonColor={game.buttonColor}
+                titleColor={game.titleColor}
+                taglineColor={game.taglineColor}
+                descriptionColor={game.descriptionColor}
+                linkUrl={game.linkUrl}
+              />
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          {isLoggedIn ? (
-            <>
-              <div className="flex flex-col items-center gap-4 sm:items-start">
-                <p className="text-black dark:text-white">
-                  {t("home.welcomeUser", { username })}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={handleFogChess}
-                    className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-                  >
-                    {t("home.startFogChess")}
-                  </button>
-                  <button
-                    onClick={handleSudokuBattle}
-                    className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-                  >
-                    {t("home.sudokuBattle")}
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex h-12 items-center justify-center rounded-full border border-solid border-black/[.08] px-8 text-black transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a]"
-                  >
-                    {t("common.logout")}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleLogin}
-                className="flex h-12 w-full items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc] sm:w-auto"
-              >
-                {t("common.login")}
-              </button>
-              <button
-                onClick={handleRegister}
-                className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-8 text-black transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a] sm:w-auto"
-              >
-                {t("common.register")}
-              </button>
-            </>
-          )}
+      </section>
+
+      {/* Benefits Section - 使用 BenefitCard 组件 */}
+      <section className="py-16 px-6 bg-[#f5f1e8]">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">
+            {t("benefits.title")}
+          </h2>
+          <p className="text-center text-gray-800 mb-12 max-w-3xl mx-auto">
+            {t("benefits.subtitle")}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {benefits.map((benefit) => (
+              <BenefitCard
+                key={benefit.key}
+                benefitKey={benefit.key}
+                icon={benefit.icon}
+                color={benefit.color}
+              />
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Testimonials Section - 使用 TestimonialCard 组件 */}
+      <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-800">
+            {t("testimonials.title")}
+          </h2>
+          <p className="text-center text-gray-600 mb-12">
+            {t("testimonials.subtitle")}
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard
+                key={testimonial.key}
+                testimonialKey={testimonial.key}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - 使用组件 */}
+      <CTASection 
+        onSignUp={() => router.push(`/${locale}/register`)}
+        onLogin={() => router.push(`/${locale}/login`)}
+      />
+
+      {/* Footer - 使用组件 */}
+      <LandingFooter />
     </div>
   );
 }

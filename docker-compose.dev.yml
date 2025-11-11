@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # PostgreSQL 数据库
+  # PostgreSQL 数据库（开发环境）
   postgres:
     image: postgres:16-alpine
     container_name: main-page-postgres-dev
@@ -12,17 +10,17 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
-      - main-page-network
+      - main-page-network-dev
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # FastAPI 后端服务（开发模式）
+  # FastAPI 后端服务（开发模式 - 支持热重载）
   backend:
     build:
       context: ./backend/api
@@ -38,11 +36,6 @@ services:
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/main_page_db
       - SECRET_KEY=dev-secret-key-change-in-production-please
-      # FogChess 短期令牌配置（与前端/游戏对接）
-      - FOG_CHESS_JWT_SECRET=dev-fog
-      - FOG_CHESS_JWT_AUD=fogchess
-      - FOG_CHESS_JWT_ISS=main-portal
-      - FOG_CHESS_TOKEN_EXPIRE_SECONDS=300
     volumes:
       # 开发模式：挂载代码目录以便热重载
       - ./backend/api:/app
@@ -54,25 +47,20 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - main-page-network
+      - main-page-network-dev
 
-  # Next.js 前端服务（开发模式）
+  # Next.js 前端服务（开发模式 - 支持热重载）
   frontend:
-    build:
-      context: ./frontend/main_page
-      dockerfile: Dockerfile.dev
+    image: node:20-alpine
     container_name: main-page-frontend-dev
+    working_dir: /app
     command: sh -c "npm install --legacy-peer-deps && npm run dev"
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      # 与代码一致的 API 变量名
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-      # 向下兼容老变量名（若有旧代码依赖）
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-      # FogChess 入口地址（本地或指向线上服务）
-      - NEXT_PUBLIC_FOGCHESS_URL=http://localhost:8080
+      - WATCHPACK_POLLING=true
     volumes:
       # 开发模式：挂载代码目录以便热重载
       - ./frontend/main_page:/app
@@ -82,11 +70,12 @@ services:
       - backend
     restart: unless-stopped
     networks:
-      - main-page-network
+      - main-page-network-dev
 
 networks:
-  main-page-network:
+  main-page-network-dev:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
+

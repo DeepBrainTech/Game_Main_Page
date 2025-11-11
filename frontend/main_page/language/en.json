@@ -61,5 +61,106 @@
   "auth": {
     "tokenInvalid": "Token invalid",
     "loginRequired": "Please login first"
+  },
+  "beforelogin": {
+    "hero": {
+      "title": "Train Your Brain.",
+      "subtitle": "Play with Purpose.",
+      "description": "Explore AI-powered cognitive training through strategy, focus, and fun.",
+      "watchDemo": "Watch Demo",
+      "signUpNow": "Sign Up Now",
+      "logIn": "Log In"
+    },
+    "games": {
+      "title": "Explore Our games",
+      "cognigo": {
+        "name": "CogniGo (Quantum Go)",
+        "tagline": "Learn Go the AI Way: Strategic Depth Meets Quantum Thinking ",
+        "description": "Experience the ancient game of Go enhanced with quantum computing principles and AI-powered learning."
+      },
+      "fogOfWar": {
+        "name": "Fog of War Chess",
+        "tagline": "Chess in the Dark. Strategy in the Unknown.",
+        "description": "Master chess with limited visibility that challenges your ability to make decisions with incomplete information."
+      },
+      "sudoku": {
+        "name": "Sudoku",
+        "tagline": "Strengthen logic, focus, and memory through themed Sudoku challenges.",
+        "description": "Experience new ways to play as each theme brings a unique twist to the classic puzzle."
+      },
+      "sudokuBattle": {
+        "name": "SudokuBattle",
+        "tagline": "Solve Smarter. Compete Harder.",
+        "description": "Strike SudokuBattle puzzles with real-time multiplayer battles that test your logic and speed."
+      },
+      "chess": {
+        "name": "ChessMaster",
+        "tagline": "Pattern recognition, memory, and analysis.",
+        "description": "Elevate your chess game with AI-driven pattern recognition exercises and strategic thinking."
+      },
+      "more": {
+        "name": "More Games",
+        "tagline": "Discover more cognitive training games.",
+        "description": "Explore our full collection of AI-powered cognitive training games designed to enhance your mental abilities."
+      }
+    },
+    "benefits": {
+      "title": "Why These Games?",
+      "subtitle": "Each game targets a core cognitive skill essential for learning and development.",
+      "strategicThinking": {
+        "title": "Strategic Thinking",
+        "game": "CogniGo (Quantum Go)"
+      },
+      "adaptability": {
+        "title": "Adaptability",
+        "game": "Fog of War Chess"
+      },
+      "focus": {
+        "title": "Focus",
+        "game": "Sudoku"
+      },
+      "memory": {
+        "title": "Memory",
+        "game": "SudokuBattle"
+      },
+      "patternRecognition": {
+        "title": "Pattern Recognition",
+        "game": "ChessMaster"
+      }
+    },
+    "testimonials": {
+      "title": "What People Say",
+      "subtitle": "Backed by science, loved by families.",
+      "testimonial1": {
+        "text": "These games are scientifically designed to enhance cognitive abilities. I've seen remarkable improvement in my strategic thinking!",
+        "author": "Dr. Sarah Chen",
+        "position": "Cognitive Neuroscientist"
+      },
+      "testimonial2": {
+        "text": "My kids love playing CogniGo! They're learning strategy while having fun. Their focus has improved noticeably.",
+        "author": "Maria Rodriguez",
+        "position": "Parent of 3"
+      },
+      "testimonial3": {
+        "text": "The perfect blend of education and entertainment. These games make brain training feel like play.",
+        "author": "James Wilson",
+        "position": "Elementary School Teacher"
+      }
+    },
+    "cta": {
+      "title": "Start Training Your Brain",
+      "subtitle": "Free Access for First Week!",
+      "signUpNow": "Sign Up Now",
+      "logIn": "Log In"
+    },
+    "footer": {
+      "about": "About",
+      "resources": "Resources",
+      "help": "Help",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "© 2025 DeepBrain Tech. All rights reserved."
+    }
   }
 }
