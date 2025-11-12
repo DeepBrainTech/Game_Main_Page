@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
 
 interface GameCardProps {
   gameKey: string;
@@ -26,16 +27,34 @@ export default function GameCard({
   linkUrl = "#"
 }: GameCardProps) {
   const t = useTranslations("beforelogin.games");
+  const [imagePath, setImagePath] = useState<string>('');
+  
+  // 在客户端设置图片路径，确保使用完整的 URL
+  useEffect(() => {
+    if (image) {
+      if (image.startsWith('http')) {
+        setImagePath(image);
+      } else {
+        // 确保路径以 / 开头，然后使用 origin
+        const path = image.startsWith('/') ? image : `/${image}`;
+        setImagePath(`${window.location.origin}${path}`);
+      }
+    }
+  }, [image]);
 
   return (
     <div className="bg-white overflow-hidden shadow-lg hover:shadow-xl transition-shadow flex flex-col w-full rounded-2xl">
       {/* 游戏图片/背景区域 */}
       <div className="h-48 bg-gray-200 relative flex-shrink-0">
-        {image && (
+        {image && imagePath && (
           <img 
-            src={image} 
+            src={imagePath} 
             alt={t(`${gameKey}.name`)}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error(`Failed to load image: ${imagePath}`);
+              e.currentTarget.style.display = 'none';
+            }}
           />
         )}
       </div>

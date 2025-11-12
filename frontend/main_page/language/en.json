@@ -93,10 +93,10 @@
         "tagline": "Solve Smarter. Compete Harder.",
         "description": "Strike SudokuBattle puzzles with real-time multiplayer battles that test your logic and speed."
       },
-      "chess": {
+      "chessMaster": {
         "name": "ChessMaster",
         "tagline": "Pattern recognition, memory, and analysis.",
-        "description": "Elevate your chess game with AI-driven pattern recognition exercises and strategic thinking."
+        "description": "Enhances working memory and logical reasoning through dynamic chess-based puzzles, thereby building individualized cognitive patterns."
       },
       "more": {
         "name": "More Games",

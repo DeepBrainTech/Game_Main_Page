@@ -18,7 +18,6 @@ export default function CTASection({ onSignUp, onLogin }: CTASectionProps) {
     <section className="py-20 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="bg-gradient-to-r from-[#5E81AC] to-[#A3BE8C] rounded-3xl p-12 text-center shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10"></div>
           <div className="relative z-10">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-8">
               {t("title")}

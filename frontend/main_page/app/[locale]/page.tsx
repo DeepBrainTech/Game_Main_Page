@@ -84,7 +84,7 @@ export default function Home() {
     },
     {
       key: "sudokuBattle",
-      image: "/images/game-sudoku.jpg",
+      image: "/images/game-sudoku-battle.jpg",
       buttonColor: "bg-[#EEC643]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#EEC643]",
@@ -92,8 +92,8 @@ export default function Home() {
       linkUrl: `/${locale}/login`,
     },
     {
-      key: "chess",
-      image: "/images/game-chess.jpg",
+      key: "chessMaster",
+      image: "/images/game-chess-master.jpg",
       buttonColor: "bg-[#5E81AC]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#5E81AC]",
@@ -102,7 +102,7 @@ export default function Home() {
     },
     {
       key: "more",
-      image: "/images/game-more.jpg",
+      image: "/images/more.jpg",
       buttonColor: "bg-[#4C566A]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#4C566A]",
