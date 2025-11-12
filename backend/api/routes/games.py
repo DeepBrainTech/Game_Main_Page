@@ -12,7 +12,9 @@ from auth import (
     create_fogchess_token,
     FOG_CHESS_TOKEN_EXPIRE_SECONDS,
     create_sudoku_token,
-    SUDOKU_TOKEN_EXPIRE_SECONDS
+    SUDOKU_TOKEN_EXPIRE_SECONDS,
+    create_quantumgo_token,
+    QUANTUMGO_TOKEN_EXPIRE_SECONDS
 )
 
 
@@ -81,6 +83,41 @@ async def issue_sudoku_token(
         data={
             "game_token": token,
             "expires_in": SUDOKU_TOKEN_EXPIRE_SECONDS,
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+            },
+        },
+    )
+
+
+@router.post("/quantumgo/token", response_model=APIResponse)
+async def issue_quantumgo_token(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """为当前登录用户签发 QuantumGo 短期令牌
+
+    返回字段：
+    - game_token: 供 QuantumGo 使用的短期 JWT（建议仅用于首次换取服务端会话）
+    - expires_in: 过期秒数
+    - user: 基础身份信息（可选，便于前端展示）
+    """
+    claims = {
+        "sub": current_user.username,
+        "user_id": current_user.id,
+        "username": current_user.username,
+        # 可按需加入：roles、locale、avatar 等
+    }
+
+    token = create_quantumgo_token(claims)
+
+    return APIResponse(
+        success=True,
+        message="ok",
+        data={
+            "game_token": token,
+            "expires_in": QUANTUMGO_TOKEN_EXPIRE_SECONDS,
             "user": {
                 "id": current_user.id,
                 "username": current_user.username,

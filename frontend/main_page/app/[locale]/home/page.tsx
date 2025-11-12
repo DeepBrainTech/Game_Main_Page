@@ -132,6 +132,43 @@ export default function HomePage() {
     }
   };
 
+  const handleQuantumGo = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    try {
+      const response = await fetch(getApiUrl("/api/games/quantumgo/token"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("获取游戏令牌失败");
+      }
+
+      const data = await response.json();
+      const gameToken = data?.data?.game_token;
+      if (!gameToken) {
+        throw new Error("无效的游戏令牌响应");
+      }
+
+      // TODO: 替换为实际的量子围棋 URL
+      const quantumGoUrl = process.env.NEXT_PUBLIC_QUANTUMGO_URL || "https://quantumgo.deepbraintechnology.com/";
+      const url = `${quantumGoUrl}#token=${encodeURIComponent(gameToken)}&locale=${encodeURIComponent(locale)}`;
+      
+      // 在新标签页中打开
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error(error);
+      alert(tHome("failedToStartGame"));
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
@@ -158,7 +195,7 @@ export default function HomePage() {
             <p className="text-black dark:text-white">
               {tHome("welcomeUser", { username })}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
               <button
                 onClick={handleFogChess}
                 className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
@@ -170,6 +207,12 @@ export default function HomePage() {
                 className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
               >
                 {tHome("sudokuBattle")}
+              </button>
+              <button
+                onClick={handleQuantumGo}
+                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+              >
+                {tHome("quantumGo")}
               </button>
               <button
                 onClick={handleLogout}
