@@ -58,6 +58,7 @@ export default function Home() {
     {
       key: "cognigo",
       image: "/images/game-cognigo.jpg",
+      hoverImage: "/images/1.jpg",
       buttonColor: "bg-[#5E81AC]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#5E81AC]",
@@ -67,6 +68,7 @@ export default function Home() {
     {
       key: "fogOfWar",
       image: "/images/game-fog-of-war.jpg",
+      hoverImage: "/images/2.jpg",
       buttonColor: "bg-[#D08770]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#D08770]",
@@ -76,6 +78,7 @@ export default function Home() {
     {
       key: "sudoku",
       image: "/images/game-sudoku.jpg",
+      hoverImage: "/images/3.jpg",
       buttonColor: "bg-[#A3BE8C]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#A3BE8C]",
@@ -85,6 +88,7 @@ export default function Home() {
     {
       key: "sudokuBattle",
       image: "/images/game-sudoku-battle.jpg",
+      hoverImage: "/images/4.jpg",
       buttonColor: "bg-[#EEC643]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#EEC643]",
@@ -94,6 +98,7 @@ export default function Home() {
     {
       key: "chessMaster",
       image: "/images/game-chess-master.jpg",
+      hoverImage: "/images/5.jpg",
       buttonColor: "bg-[#5E81AC]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#5E81AC]",
@@ -103,6 +108,7 @@ export default function Home() {
     {
       key: "more",
       image: "/images/more.jpg",
+      hoverImage: "/images/6.jpg",
       buttonColor: "bg-[#4C566A]",
       titleColor: "text-gray-800",
       taglineColor: "text-[#4C566A]",
@@ -154,6 +160,7 @@ export default function Home() {
                 key={game.key}
                 gameKey={game.key}
                 image={game.image}
+              hoverImage={game.hoverImage}
                 buttonColor={game.buttonColor}
                 titleColor={game.titleColor}
                 taglineColor={game.taglineColor}
