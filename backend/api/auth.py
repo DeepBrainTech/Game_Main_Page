@@ -42,6 +42,13 @@ QUANTUMGO_AUD = os.getenv("QUANTUMGO_JWT_AUD", "quantum-go")
 QUANTUMGO_ISS = os.getenv("QUANTUMGO_JWT_ISS", "main-portal")
 QUANTUMGO_TOKEN_EXPIRE_SECONDS = int(os.getenv("QUANTUMGO_TOKEN_EXPIRE_SECONDS", "300"))
 
+# ChessMater 专用令牌配置
+CHESSMATER_SECRET = os.getenv("CHESSMATER_JWT_SECRET", "change-this-chessmater-secret")
+CHESSMATER_ALG = os.getenv("CHESSMATER_JWT_ALG", "HS256")
+CHESSMATER_AUD = os.getenv("CHESSMATER_JWT_AUD", "chessmater")
+CHESSMATER_ISS = os.getenv("CHESSMATER_JWT_ISS", "main-portal")
+CHESSMATER_TOKEN_EXPIRE_SECONDS = int(os.getenv("CHESSMATER_TOKEN_EXPIRE_SECONDS", "300"))
+
 # 密码加密
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -115,6 +122,23 @@ def create_quantumgo_token(claims: Dict[str, Any], expires_seconds: Optional[int
         "aud": QUANTUMGO_AUD,
     })
     return jwt.encode(to_encode, QUANTUMGO_SECRET, algorithm=QUANTUMGO_ALG)
+
+def create_chessmater_token(claims: Dict[str, Any], expires_seconds: Optional[int] = None) -> str:
+    """
+    创建 ChessMater 短期访问令牌
+    包含必要的 aud/iss，默认 300s 过期。
+    """
+    to_encode = claims.copy()
+    expire_sec = expires_seconds or CHESSMATER_TOKEN_EXPIRE_SECONDS
+    expire = datetime.utcnow() + timedelta(seconds=expire_sec)
+
+    to_encode.update({
+        "exp": expire,
+        "iss": CHESSMATER_ISS,
+        "aud": CHESSMATER_AUD,
+    })
+
+    return jwt.encode(to_encode, CHESSMATER_SECRET, algorithm=CHESSMATER_ALG)
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:

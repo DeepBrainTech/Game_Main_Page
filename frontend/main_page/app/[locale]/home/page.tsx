@@ -169,6 +169,41 @@ export default function HomePage() {
     }
   };
 
+  const handleChessMater = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    try {
+      const response = await fetch(getApiUrl("/api/games/chessmater/token"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("获取游戏令牌失败");
+      }
+
+      const data = await response.json();
+      const gameToken = data?.data?.game_token;
+      if (!gameToken) {
+        throw new Error("无效的游戏令牌响应");
+      }
+
+      const chessMaterUrl = "https://chessmater.pages.dev/";
+      const url = `${chessMaterUrl}#token=${encodeURIComponent(gameToken)}&locale=${encodeURIComponent(locale)}`;
+
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error(error);
+      alert(tHome("failedToStartGame"));
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
@@ -213,6 +248,12 @@ export default function HomePage() {
                 className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
               >
                 {tHome("quantumGo")}
+              </button>
+              <button
+                onClick={handleChessMater}
+                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+              >
+                {tHome("chessMater")}
               </button>
               <button
                 onClick={handleLogout}
