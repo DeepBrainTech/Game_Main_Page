@@ -22,6 +22,7 @@
     "sudokuBattle": "数独对战",
     "startFogChess": "迷雾象棋",
     "quantumGo": "量子围棋",
+    "chessMater": "ChessMater",
     "failedToStartGame": "启动游戏失败"
   },
   "login": {
