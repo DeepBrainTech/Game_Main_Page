@@ -67,7 +67,7 @@
   "beforelogin": {
     "hero": {
       "title": "Train Your Brain.",
-      "subtitle": "Play with Purpose.",
+      "subtitle": "Improve with games.",
       "description": "Explore AI-powered cognitive training through strategy, focus, and fun.",
       "watchDemo": "Watch Demo",
       "signUpNow": "Sign Up Now",
@@ -77,28 +77,28 @@
       "title": "Explore Our games",
       "cognigo": {
         "name": "CogniGo (Quantum Go)",
-        "tagline": "Learn Go the AI Way: Strategic Depth Meets Quantum Thinking ",
-        "description": "Experience the ancient game of Go enhanced with quantum computing principles and AI-powered learning."
+        "tagline": "Go in the Quantum Realm. Strategy in Superposition.",
+        "description": "Experience the game of Go with quantum principles and AI-powered learning."
       },
       "fogOfWar": {
         "name": "Fog of War Chess",
         "tagline": "Chess in the Dark. Strategy in the Unknown.",
-        "description": "Master chess with limited visibility that challenges your ability to make decisions with incomplete information."
+        "description": "Master chess with limited visibility that challenges reasoning."
       },
       "sudoku": {
         "name": "Sudoku",
-        "tagline": "Strengthen logic, focus, and memory through themed Sudoku challenges.",
+        "tagline": "Classic Sudoku to strengthen logic, focus, and memory throughchallenges.",
         "description": "Experience new ways to play as each theme brings a unique twist to the classic puzzle."
       },
       "sudokuBattle": {
         "name": "SudokuBattle",
         "tagline": "Solve Smarter. Compete Harder.",
-        "description": "Strike SudokuBattle puzzles with real-time multiplayer battles that test your logic and speed."
+        "description": "Strike real-time SudokuBattle puzzles with battles that test your logic and speed."
       },
       "chessMaster": {
         "name": "ChessMaster",
         "tagline": "Pattern recognition, memory, and analysis.",
-        "description": "Enhances working memory and logical reasoning through dynamic chess-based puzzles, thereby building individualized cognitive patterns."
+        "description": "Enhances working memory and logical reasoning through dynamic chess-based puzzles, building cognitive patterns."
       },
       "more": {
         "name": "More Games",
