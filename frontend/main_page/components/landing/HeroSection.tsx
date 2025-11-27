@@ -65,7 +65,7 @@ export default function HeroSection({ onWatchDemo }: HeroSectionProps) {
         <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gray-800 aspect-video">
           <iframe
             className="w-full h-full"
-            src="https://www.youtube.com/embed/iG8ritExvgU"
+            src="https://www.youtube.com/embed/DuboYb_n-xE?loop=1&playlist=DuboYb_n-xE"
             title="Demo Video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
