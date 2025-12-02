@@ -22,7 +22,8 @@
     "sudokuBattle": "数独对战",
     "startFogChess": "迷雾象棋",
     "quantumGo": "量子围棋",
-    "chessMater": "ChessMater",
+    "chessMater": "棋艺大师",
+    "chessTourmaster": "棋境之旅",
     "failedToStartGame": "启动游戏失败"
   },
   "login": {
@@ -99,6 +100,11 @@
         "name": "思维棋阵",
         "tagline": "模式识别、记忆和分析。",
         "description": "基于动态国际象棋谜题强化工作记忆和逻辑推理能力，从而构建个体的认知模式。"
+      },
+      "chessTourmaster": {
+        "name": "棋旅大师",
+        "tagline": "多维棋盘探索，策略思维升级。",
+        "description": "在不断变化的棋盘与路径中制定最佳行动方案，挑战你的全局规划、适应力与高阶决策能力。"
       },
       "more": {
         "name": "更多游戏",

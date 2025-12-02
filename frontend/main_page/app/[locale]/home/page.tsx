@@ -204,6 +204,40 @@ export default function HomePage() {
     }
   };
 
+  const handleChessTourmaster = async () => {
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+        router.push(`/${locale}/login`);
+        return;
+    }
+
+    try {
+        const response = await fetch(getApiUrl(`/api/games/chess-tourmaster/token`), {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!response.ok)
+            throw new Error("获取 Chess Tourmaster 游戏令牌失败");
+
+        const data = await response.json();
+        const gameToken = data?.data?.game_token;
+
+        if (!gameToken)
+            throw new Error("无法获取有效的游戏令牌");
+
+        const chessTourmasterUrl = "https://chess-tourmaster.pages.dev/";
+        const url = `${chessTourmasterUrl}#token=${encodeURIComponent(gameToken)}&locale=${encodeURIComponent(locale)}`;
+
+        window.open(url, "_blank");
+    } catch (error) {
+        console.error(error);
+        alert("Failed to start Chess Tourmaster");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
@@ -254,6 +288,12 @@ export default function HomePage() {
                 className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
               >
                 {tHome("chessMater")}
+              </button>
+              <button
+                onClick={handleChessTourmaster}
+                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+              >
+                {tHome("chessTourmaster")}
               </button>
               <button
                 onClick={handleLogout}

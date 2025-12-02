@@ -49,6 +49,13 @@ CHESSMATER_AUD = os.getenv("CHESSMATER_JWT_AUD", "chessmater")
 CHESSMATER_ISS = os.getenv("CHESSMATER_JWT_ISS", "main-portal")
 CHESSMATER_TOKEN_EXPIRE_SECONDS = int(os.getenv("CHESSMATER_TOKEN_EXPIRE_SECONDS", "300"))
 
+# ChessTourmaster 专用配置
+TOURMASTER_SECRET = os.getenv("TOURMASTER_JWT_SECRET", "change-this-tourmaster-secret")
+TOURMASTER_ALG = os.getenv("TOURMASTER_JWT_ALG", "HS256")
+TOURMASTER_AUD = os.getenv("TOURMASTER_JWT_AUD", "chess-tourmaster")
+TOURMASTER_ISS = os.getenv("TOURMASTER_JWT_ISS", "main-portal")
+TOURMASTER_TOKEN_EXPIRE_SECONDS = int(os.getenv("TOURMASTER_TOKEN_EXPIRE_SECONDS", "300"))
+
 # 密码加密
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -139,6 +146,24 @@ def create_chessmater_token(claims: Dict[str, Any], expires_seconds: Optional[in
     })
 
     return jwt.encode(to_encode, CHESSMATER_SECRET, algorithm=CHESSMATER_ALG)
+
+def create_tourmaster_token(claims: Dict[str, Any], expires_seconds: Optional[int] = None) -> str:
+    """
+    创建 Chess-Tourmaster 短期访问的令牌
+    包含必要的 aud/iss 字段 默认 300s 过期。
+    """
+    to_encode = claims.copy()
+
+    expire_sec = expires_seconds or TOURMASTER_TOKEN_EXPIRE_SECONDS
+    expire = datetime.utcnow() + timedelta(seconds=expire_sec)
+
+    to_encode.update({
+        "exp": expire,
+        "iss": TOURMASTER_ISS,
+        "aud": TOURMASTER_AUD,
+    })
+
+    return jwt.encode(to_encode, TOURMASTER_SECRET, algorithm=TOURMASTER_ALG)
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:

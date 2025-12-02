@@ -23,6 +23,7 @@
     "startFogChess": "FogChess",
     "quantumGo": "Quantum Go",
     "chessMater": "ChessMater",
+    "chessTourmaster": "Chess Tourmaster",
     "failedToStartGame": "Failed to start game"
   },
   "login": {
@@ -99,6 +100,11 @@
         "name": "ChessMaster",
         "tagline": "Pattern recognition, memory, and analysis.",
         "description": "Enhances working memory and logical reasoning through dynamic chess-based puzzles, thereby building individualized cognitive patterns."
+      },
+      "chessTourmaster": {
+        "name": "Chess Tourmaster",
+        "tagline": "Strategic Chess Adventures Across Dynamic Boards.",
+        "description": "Challenge your tactical planning and adaptability with innovative chess-based puzzles set across evolving board designs."
       },
       "more": {
         "name": "More Games",
