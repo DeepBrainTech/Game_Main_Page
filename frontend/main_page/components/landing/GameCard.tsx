@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 interface GameCardProps {
   gameKey: string;
   image?: string;
+  hoverImage?: string;
   buttonColor?: string; // 按钮颜色（Tailwind 类名，如 "bg-blue-500"）
   titleColor?: string; // 标题颜色（Tailwind 类名，如 "text-gray-800"）
   taglineColor?: string; // 标语颜色（Tailwind 类名，如 "text-blue-600"）
@@ -20,6 +21,7 @@ interface GameCardProps {
 export default function GameCard({ 
   gameKey,
   image,
+  hoverImage,
   buttonColor = "bg-blue-500",
   titleColor = "text-gray-800",
   taglineColor = "text-blue-600",
@@ -28,31 +30,56 @@ export default function GameCard({
 }: GameCardProps) {
   const t = useTranslations("beforelogin.games");
   const [imagePath, setImagePath] = useState<string>('');
+  const [hoverImagePath, setHoverImagePath] = useState<string>('');
+  const [isHovered, setIsHovered] = useState<boolean>(false);
   
+  const resolveImagePath = (img?: string) => {
+    if (!img) return '';
+    if (img.startsWith('http')) {
+      return img;
+    }
+    const path = img.startsWith('/') ? img : `/${img}`;
+    if (typeof window === 'undefined') {
+      return path;
+    }
+    return `${window.location.origin}${path}`;
+  };
+
   // 在客户端设置图片路径，确保使用完整的 URL
   useEffect(() => {
-    if (image) {
-      if (image.startsWith('http')) {
-        setImagePath(image);
-      } else {
-        // 确保路径以 / 开头，然后使用 origin
-        const path = image.startsWith('/') ? image : `/${image}`;
-        setImagePath(`${window.location.origin}${path}`);
-      }
-    }
-  }, [image]);
+    setImagePath(resolveImagePath(image));
+    setHoverImagePath(resolveImagePath(hoverImage));
+  }, [image, hoverImage]);
+
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
 
   return (
-    <div className="bg-white overflow-hidden shadow-lg hover:shadow-xl transition-shadow flex flex-col w-full rounded-2xl">
+    <div
+      className="bg-white overflow-hidden shadow-lg transition-all duration-300 flex flex-col w-full rounded-2xl hover:shadow-xl hover:-translate-y-1"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* 游戏图片/背景区域 */}
-      <div className="h-48 bg-gray-200 relative flex-shrink-0">
-        {image && imagePath && (
+      <div className="h-48 bg-gray-200 relative flex-shrink-0 overflow-hidden">
+        {imagePath && (
           <img 
             src={imagePath} 
             alt={t(`${gameKey}.name`)}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-opacity duration-300 ${isHovered && hoverImagePath ? 'opacity-0' : 'opacity-100'}`}
             onError={(e) => {
               console.error(`Failed to load image: ${imagePath}`);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        )}
+        {hoverImagePath && (
+          <img
+            src={hoverImagePath}
+            alt={t(`${gameKey}.name`)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            onError={(e) => {
+              console.error(`Failed to load hover image: ${hoverImagePath}`);
               e.currentTarget.style.display = 'none';
             }}
           />
@@ -81,4 +108,3 @@ export default function GameCard({
     </div>
   );
 }
-
