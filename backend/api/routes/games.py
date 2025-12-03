@@ -11,12 +11,18 @@ from auth import (
     get_current_active_user,
     create_fogchess_token,
     FOG_CHESS_TOKEN_EXPIRE_SECONDS,
+  
     create_sudoku_token,
     SUDOKU_TOKEN_EXPIRE_SECONDS,
+  
     create_quantumgo_token,
     QUANTUMGO_TOKEN_EXPIRE_SECONDS,
+  
     create_chessmater_token,
-    CHESSMATER_TOKEN_EXPIRE_SECONDS
+    CHESSMATER_TOKEN_EXPIRE_SECONDS,
+  
+    create_tourmaster_token,
+    TOURMASTER_TOKEN_EXPIRE_SECONDS,
 )
 
 
@@ -163,3 +169,37 @@ async def issue_chessmater_token(
         },
     )
 
+
+@router.post("/chess-tourmaster/token", response_model=APIResponse)
+async def issue_tourmaster_token(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    为当前登录用户签发 Chess-Tourmaster 短期令牌
+
+    返回字段:
+    - game_token: 供 Chess-Tourmaster 使用的短期 JWT（建议仅用于首次授权服务器端会话）
+    - expires_in: 过期时间
+    - user: 基础的身份信息
+    """
+    claims = {
+        "sub": current_user.username,
+        "user_id": current_user.id,
+        "username": current_user.username,
+    }
+
+    token = create_tourmaster_token(claims)
+
+    return APIResponse(
+        success=True,
+        message="ok",
+        data={
+            "game_token": token,
+            "expires_in": TOURMASTER_TOKEN_EXPIRE_SECONDS,
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+            },
+        },
+    )

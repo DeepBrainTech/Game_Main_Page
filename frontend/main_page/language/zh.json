@@ -22,7 +22,8 @@
     "sudokuBattle": "数独对战",
     "startFogChess": "迷雾象棋",
     "quantumGo": "量子围棋",
-    "chessMater": "ChessMater",
+    "chessMater": "棋艺大师",
+    "chessTourmaster": "棋境之旅",
     "failedToStartGame": "启动游戏失败"
   },
   "login": {
@@ -67,7 +68,7 @@
   "beforelogin": {
     "hero": {
       "title": "训练你的大脑。",
-      "subtitle": "在游戏中训练你的大脑。",
+      "subtitle": "有目的地玩耍。",
       "description": "通过策略、专注和乐趣，探索 AI 驱动的认知训练。",
       "watchDemo": "观看演示",
       "signUpNow": "立即注册",
@@ -77,28 +78,33 @@
       "title": "探索我们的游戏",
       "cognigo": {
         "name": "CogniGo（量子围棋）",
-        "tagline": "量子领域的围棋。挑战叠加态中的博弈。",
-        "description": "体验融合量子叠加的古老围棋游戏，挑战你的战略思维。"
+        "tagline": "学习围棋的艺术。与量子共舞。",
+        "description": "体验融合量子计算机制的古老围棋游戏，挑战你的战略思维。"
       },
       "fogOfWar": {
         "name": "战争迷雾国际象棋",
-        "tagline": "黑暗领域的象棋。分析未知之中的策略。",
-        "description": "体验融合未知迷雾的标准国际象棋，挑战你的推理能力。"
+        "tagline": "黑暗中的国际象棋。未知中的策略。",
+        "description": "在有限的视野下掌握国际象棋，挑战你在不完整信息下做决策的能力。"
       },
       "sudoku": {
         "name": "数独",
-        "tagline": "经典的数独游戏。挑战你的逻辑思维。",
-        "description": "体验不同主题的数独游戏，提升你的逻辑推理、问题解决能力。"
+        "tagline": "训练你的逻辑思维和数字推理能力。",
+        "description": "通过经典数独游戏提升你的逻辑推理、专注力和问题解决能力。"
       },
       "sudokuBattle": {
         "name": "数独对战",
-        "tagline": "新颖的对战游戏，更聪明地解题，更努力地竞争。",
-        "description": "体验实时多人对战的数独谜题，测试你的逻辑和速度。"
+        "tagline": "更聪明地解题。更努力地竞争。",
+        "description": "在实时多人对战中挑战数独谜题，测试你的逻辑和速度。"
       },
       "chessMaster": {
         "name": "思维棋阵",
-        "tagline": "棋类闯关，开发你的思维，识别，记忆和分析能力。",
-        "description": "体验动态国际象棋谜题，强化工作记忆和逻辑推理能力，构建认知模式。"
+        "tagline": "模式识别、记忆和分析。",
+        "description": "基于动态国际象棋谜题强化工作记忆和逻辑推理能力，从而构建个体的认知模式。"
+      },
+      "chessTourmaster": {
+        "name": "棋旅大师",
+        "tagline": "多维棋盘探索，策略思维升级。",
+        "description": "在不断变化的棋盘与路径中制定最佳行动方案，挑战你的全局规划、适应力与高阶决策能力。"
       },
       "more": {
         "name": "更多游戏",

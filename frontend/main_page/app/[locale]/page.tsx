@@ -160,7 +160,7 @@ export default function Home() {
                 key={game.key}
                 gameKey={game.key}
                 image={game.image}
-              hoverImage={game.hoverImage}
+                hoverImage={game.hoverImage}
                 buttonColor={game.buttonColor}
                 titleColor={game.titleColor}
                 taglineColor={game.taglineColor}
