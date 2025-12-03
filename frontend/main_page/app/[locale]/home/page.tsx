@@ -296,6 +296,7 @@ export default function HomePage() {
                 {tHome("chessTourmaster")}
               </button>
               <button
+
                 onClick={handleLogout}
                 className="flex h-12 items-center justify-center rounded-full border border-solid border-black/[.08] px-8 text-black transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a]"
               >
