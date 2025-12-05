@@ -84,7 +84,8 @@ export function useGameLauncher() {
     launchGame({
       gameKey: "fogchess",
       apiEndpoint: "/api/games/fogchess/token",
-      envVar: "NEXT_PUBLIC_FOGCHESS_URL",
+      gameUrl: "https://fogchess-frontend.onrender.com", // 默认开发环境 URL
+      envVar: "NEXT_PUBLIC_FOGCHESS_URL", // 环境变量优先，如果没有设置则使用默认值
       openInNewTab: false,
     });
   };
