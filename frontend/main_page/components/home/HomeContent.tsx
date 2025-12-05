@@ -29,62 +29,96 @@ export default function HomeContent({
   const tCommon = useTranslations("common");
   const tHome = useTranslations("home");
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start relative">
-        {/* 语言切换器 */}
-        <div className="absolute top-4 right-4">
-          <LanguageSwitcher />
-        </div>
+  // 游戏配置，包含颜色和图标
+  const games = [
+    {
+      key: "fogChess",
+      name: tHome("startFogChess"),
+      onClick: onFogChess,
+      color: "bg-[#D08770]",
+      hoverColor: "hover:bg-[#C07760]",
+    },
+    {
+      key: "sudokuBattle",
+      name: tHome("sudokuBattle"),
+      onClick: onSudokuBattle,
+      color: "bg-[#EEC643]",
+      hoverColor: "hover:bg-[#DEB633]",
+    },
+    {
+      key: "quantumGo",
+      name: tHome("quantumGo"),
+      onClick: onQuantumGo,
+      color: "bg-[#5E81AC]",
+      hoverColor: "hover:bg-[#4E719C]",
+    },
+    {
+      key: "chessMater",
+      name: tHome("chessMater"),
+      onClick: onChessMater,
+      color: "bg-[#5E81AC]",
+      hoverColor: "hover:bg-[#4E719C]",
+    },
+    {
+      key: "chessTourmaster",
+      name: tHome("chessTourmaster"),
+      onClick: onChessTourmaster,
+      color: "bg-[#A3BE8C]",
+      hoverColor: "hover:bg-[#93AE7C]",
+    },
+  ];
 
-        <div className="flex flex-col items-center gap-8 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-5xl font-bold leading-tight tracking-tight text-black dark:text-zinc-50">
-            {tHome("title")}
-          </h1>
+  return (
+    <div className="min-h-screen bg-[#FEF6EC] font-sans">
+      {/* Header - 与首页保持一致 */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">🧠 DeepBrainTech Presents</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <div className="flex flex-col items-center gap-4 sm:items-start">
-            <p className="text-black dark:text-white">
+      </header>
+
+      {/* 主内容区域 */}
+      <main className="pt-24 pb-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* 欢迎区域 */}
+          <div className="text-center mb-12">
+            <h2 
+              className="text-4xl md:text-5xl font-bold text-[#2C3539] mb-4"
+              style={{ textShadow: '0 4px 6px rgba(0, 0, 0, 0.3)' }}
+            >
               {tHome("welcomeUser", { username })}
+            </h2>
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+              {tHome("subtitle")}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+          </div>
+
+          {/* 游戏按钮网格 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {games.map((game) => (
               <button
-                onClick={onFogChess}
-                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
+                key={game.key}
+                onClick={game.onClick}
+                className={`${game.color} ${game.hoverColor} text-white rounded-2xl px-6 py-8 text-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center justify-center min-h-[120px]`}
               >
-                {tHome("startFogChess")}
+                {game.name}
               </button>
-              <button
-                onClick={onSudokuBattle}
-                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-              >
-                {tHome("sudokuBattle")}
-              </button>
-              <button
-                onClick={onQuantumGo}
-                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-              >
-                {tHome("quantumGo")}
-              </button>
-              <button
-                onClick={onChessMater}
-                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-              >
-                {tHome("chessMater")}
-              </button>
-              <button
-                onClick={onChessTourmaster}
-                className="flex h-12 items-center justify-center rounded-full bg-black px-8 text-white transition-colors hover:bg-[#383838] dark:bg-white dark:text-black dark:hover:bg-[#ccc]"
-              >
-                {tHome("chessTourmaster")}
-              </button>
-              <button
-                onClick={onLogout}
-                className="flex h-12 items-center justify-center rounded-full border border-solid border-black/[.08] px-8 text-black transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a]"
-              >
-                {tCommon("logout")}
-              </button>
-            </div>
+            ))}
+          </div>
+
+          {/* 退出登录按钮 */}
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={onLogout}
+              className="px-8 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-full font-medium transition-all duration-300 hover:bg-gray-50 hover:border-gray-400 shadow-md hover:shadow-lg"
+            >
+              {tCommon("logout")}
+            </button>
           </div>
         </div>
       </main>
