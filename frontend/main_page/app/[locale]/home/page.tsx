@@ -15,6 +15,7 @@ export default function HomePage() {
   const {
     handleFogChess,
     handleSudokuBattle,
+    handleSudoku,
     handleQuantumGo,
     handleChessMater,
     handleChessTourmaster,
@@ -33,6 +34,7 @@ export default function HomePage() {
       username={username}
       onFogChess={handleFogChess}
       onSudokuBattle={handleSudokuBattle}
+      onSudoku={handleSudoku}
       onQuantumGo={handleQuantumGo}
       onChessMater={handleChessMater}
       onChessTourmaster={handleChessTourmaster}

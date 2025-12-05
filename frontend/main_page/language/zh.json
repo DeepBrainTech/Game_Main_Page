@@ -20,6 +20,7 @@
       "username": "用户名"
     },
     "subtitle": "选择您想要开始的游戏，开始您的认知训练之旅",
+    "sudoku": "数独",
     "sudokuBattle": "数独对战",
     "startFogChess": "迷雾象棋",
     "quantumGo": "量子围棋",

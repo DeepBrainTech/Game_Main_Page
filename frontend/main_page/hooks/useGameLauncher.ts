@@ -105,7 +105,7 @@ export function useGameLauncher() {
       apiEndpoint: "/api/games/quantumgo/token",
       gameUrl: "https://quantumgo.deepbraintechnology.com/",
       envVar: "NEXT_PUBLIC_QUANTUMGO_URL",
-      openInNewTab: true,
+      openInNewTab: false,
     });
   };
 
@@ -127,9 +127,15 @@ export function useGameLauncher() {
     });
   };
 
+  const handleSudoku = () => {
+    // 直接打开链接，不需要 token
+    window.open("https://sudoku.deepbraintechnology.com/", "_blank");
+  };
+
   return {
     handleFogChess,
     handleSudokuBattle,
+    handleSudoku,
     handleQuantumGo,
     handleChessMater,
     handleChessTourmaster,

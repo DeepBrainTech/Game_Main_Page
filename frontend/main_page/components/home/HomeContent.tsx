@@ -7,6 +7,7 @@ interface HomeContentProps {
   username: string;
   onFogChess: () => void;
   onSudokuBattle: () => void;
+  onSudoku: () => void;
   onQuantumGo: () => void;
   onChessMater: () => void;
   onChessTourmaster: () => void;
@@ -21,6 +22,7 @@ export default function HomeContent({
   username,
   onFogChess,
   onSudokuBattle,
+  onSudoku,
   onQuantumGo,
   onChessMater,
   onChessTourmaster,
@@ -39,12 +41,19 @@ export default function HomeContent({
       hoverColor: "hover:bg-[#C07760]",
     },
     {
-      key: "sudokuBattle",
-      name: tHome("sudokuBattle"),
-      onClick: onSudokuBattle,
+      key: "sudoku",
+      name: tHome("sudoku"),
+      onClick: onSudoku,
       color: "bg-[#EEC643]",
       hoverColor: "hover:bg-[#DEB633]",
     },
+    // {
+    //   key: "sudokuBattle",
+    //   name: tHome("sudokuBattle"),
+    //   onClick: onSudokuBattle,
+    //   color: "bg-[#EEC643]",
+    //   hoverColor: "hover:bg-[#DEB633]",
+    // },
     {
       key: "quantumGo",
       name: tHome("quantumGo"),

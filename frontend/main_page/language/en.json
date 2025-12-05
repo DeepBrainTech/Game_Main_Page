@@ -20,6 +20,7 @@
       "username": "Username"
     },
     "subtitle": "Choose a game to start your cognitive training journey",
+    "sudoku": "Sudoku",
     "sudokuBattle": "Sudoku Battle",
     "startFogChess": "FogChess",
     "quantumGo": "Quantum Go",
