@@ -19,7 +19,7 @@ export default function LanguageSwitcher() {
     <div className="flex items-center gap-2">
       <button
         onClick={() => switchLanguage("zh")}
-        className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+        className={`px-2 py-1 rounded text-sm font-medium transition-colors ${
           currentLocale === "zh"
             ? "bg-black text-white dark:bg-white dark:text-black"
             : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"

@@ -24,6 +24,7 @@ export default function Home() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations("beforelogin");
+  const tCommon = useTranslations("common");
 
   useEffect(() => {
     // 检查是否已登录
@@ -141,7 +142,15 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">🧠 DeepBrainTech Presents</span>
           </div>
-          <LanguageSwitcher />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push(`/${locale}/login`)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              {tCommon("login")}
+            </button>
+            <LanguageSwitcher />
+          </div>
         </div>
       </header>
 
