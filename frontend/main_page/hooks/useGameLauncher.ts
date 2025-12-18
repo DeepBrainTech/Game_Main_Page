@@ -10,8 +10,7 @@ import { getApiUrl } from "@/lib/api-config";
 interface GameConfig {
   gameKey: string;
   apiEndpoint: string;
-  gameUrl?: string;
-  envVar?: string;
+  gameUrl: string;
   openInNewTab?: boolean;
 }
 
@@ -54,15 +53,14 @@ export function useGameLauncher() {
         throw new Error("无效的游戏令牌响应");
       }
 
-      // 确定游戏 URL
-      let gameUrl = config.gameUrl;
-      if (config.envVar) {
-        gameUrl = process.env[config.envVar] || gameUrl;
-      }
+      // 使用配置中的游戏 URL
+      const gameUrl = config.gameUrl;
       
       if (!gameUrl) {
         throw new Error(`未配置游戏 URL (${config.gameKey})`);
       }
+      
+      console.log(`[${config.gameKey}] 使用游戏 URL:`, gameUrl);
 
       // 构建完整 URL
       const url = `${gameUrl}#token=${encodeURIComponent(gameToken)}&locale=${encodeURIComponent(locale)}`;
@@ -84,8 +82,8 @@ export function useGameLauncher() {
     launchGame({
       gameKey: "fogchess",
       apiEndpoint: "/api/games/fogchess/token",
-      gameUrl: "https://fogchess-frontend.onrender.com", // 默认开发环境 URL
-      envVar: "NEXT_PUBLIC_FOGCHESS_URL", // 环境变量优先，如果没有设置则使用默认值
+      // 直接读取环境变量，如果没有设置则使用默认线上地址
+      gameUrl: process.env.NEXT_PUBLIC_FOGCHESS_URL || "https://fogchess-frontend.onrender.com",
       openInNewTab: false,
     });
   };
@@ -103,8 +101,8 @@ export function useGameLauncher() {
     launchGame({
       gameKey: "quantumGo",
       apiEndpoint: "/api/games/quantumgo/token",
-      gameUrl: "https://quantumgo.deepbraintechnology.com/",
-      envVar: "NEXT_PUBLIC_QUANTUMGO_URL",
+      // 直接读取环境变量，如果没有设置则使用默认线上地址
+      gameUrl: process.env.NEXT_PUBLIC_QUANTUMGO_URL || "https://quantumgo.deepbraintechnology.com/",
       openInNewTab: false,
     });
   };
