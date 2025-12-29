@@ -112,7 +112,7 @@ export function useGameLauncher() {
       gameKey: "chessMater",
       apiEndpoint: "/api/games/chessmater/token",
       gameUrl: "https://chessmater.pages.dev/",
-      openInNewTab: true,
+      openInNewTab: false,
     });
   };
 
@@ -121,7 +121,7 @@ export function useGameLauncher() {
       gameKey: "chessTourmaster",
       apiEndpoint: "/api/games/chess-tourmaster/token",
       gameUrl: "https://chess-tourmaster.pages.dev/",
-      openInNewTab: true,
+      openInNewTab: false,
     });
   };
 
