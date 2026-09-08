@@ -2,6 +2,7 @@
 
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Vec3 = [number, number, number];
@@ -381,6 +382,16 @@ export default function ShapeRotation({ onComplete }: { onComplete: (score: numb
     phase === "practice"
       ? practiceTrials[Math.min(trialIdx, practiceTrials.length - 1)]
       : formalTrials[Math.min(trialIdx, formalTrials.length - 1)];
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: trialIdx + 1,
+          questionTotal: phase === "practice" ? PRACTICE_COUNT : FORMAL_COUNT,
+        }
+  );
 
   // ── Phase helpers ──────────────────────────────────────────────────────────
   const startPractice = () => {

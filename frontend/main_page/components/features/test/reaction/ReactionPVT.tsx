@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 type Phase = "intro" | "practice" | "formal";
 type ScreenState = "idle" | "waiting" | "ready" | "tooSoon" | "recorded";
@@ -116,6 +117,16 @@ export default function ReactionPVT({
 
   const ageBand = useMemo(() => resolveAgeBand(parseAge(dateOfBirth)), [dateOfBirth]);
   const lapseThreshold = useMemo(() => resolveLapseThreshold(ageBand), [ageBand]);
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? formalIndex + 1 : 1,
+          questionTotal: phase === "formal" ? FORMAL_TRIAL_COUNT : 1,
+        }
+  );
 
   useEffect(() => {
     return () => {

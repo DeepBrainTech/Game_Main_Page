@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useReportTestChrome } from "../test-ui";
 
 type FoldDirection = "leftToRight" | "rightToLeft" | "topToBottom" | "bottomToTop";
 
@@ -437,6 +438,16 @@ export default function PaperFold({ onComplete }: { onComplete: (score: number) 
   const currentTrial = isPractice
     ? practiceTrials[Math.min(trialIdx, practiceTrials.length - 1)]
     : formalTrials[Math.min(trialIdx, formalTrials.length - 1)];
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: trialIdx + 1,
+          questionTotal: isPractice ? PRACTICE_COUNT : FORMAL_COUNT,
+        }
+  );
 
   const startPractice = () => {
     if (timerRef.current) clearTimeout(timerRef.current);

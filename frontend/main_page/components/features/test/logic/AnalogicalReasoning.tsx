@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 interface AnalogyQuestion {
   id: string;
@@ -122,6 +123,16 @@ export default function AnalogicalReasoning({ onComplete }: { onComplete: (score
     isSymbolHeavy(currentQuestion.leftA) ||
     isSymbolHeavy(currentQuestion.leftB) ||
     isSymbolHeavy(currentQuestion.rightA);
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? formalIndex + 1 : 1,
+          questionTotal: phase === "formal" ? FORMAL_QUESTIONS.length : 1,
+        }
+  );
 
   useEffect(() => {
     if (phase === "formal") {

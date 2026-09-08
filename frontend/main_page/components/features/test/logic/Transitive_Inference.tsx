@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 type OptionKey = "leftGtRight" | "leftLtRight" | "equal" | "unknown";
 
@@ -191,6 +192,16 @@ export default function TransitiveInference({
   const options = getOptionOrder(currentQuestion.id);
   const correct = getCorrectOption(currentQuestion);
   const ageBand = useMemo(() => resolveAgeBand(parseAge(dateOfBirth)), [dateOfBirth]);
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? formalIndex + 1 : 1,
+          questionTotal: phase === "formal" ? FORMAL_QUESTIONS.length : 1,
+        }
+  );
 
   useEffect(() => {
     if (phase === "formal") {

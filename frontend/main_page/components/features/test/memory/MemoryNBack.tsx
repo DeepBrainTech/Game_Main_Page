@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 type NBackMode = "grid" | "letter";
 
@@ -240,6 +241,16 @@ export default function MemoryNBack({ onComplete, dateOfBirth }: MemoryNBackProp
   // 正式阶段计分累积器。
 
   const totalQuestions = FORMAL_LEVELS.length;
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? Math.min(currentIndex + 1, totalQuestions) : 1,
+          questionTotal: phase === "formal" ? totalQuestions : 1,
+        }
+  );
 
   const resetPractice = () => {
     setPracticeStream([]);

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 type OptionKey = "entailed" | "notEntailed" | "indeterminate";
 type AgeBandId = "children" | "preteens" | "teens" | "youngAdults" | "middleAged" | "seniors";
@@ -308,6 +309,16 @@ export default function SyllogisticReasoning({
   const currentQuestion = phase === "formal" ? FORMAL_QUESTIONS[formalIndex] : PRACTICE_QUESTION;
   const options = getOptionOrder();
   const ageBand = useMemo(() => resolveAgeBand(parseAge(dateOfBirth)), [dateOfBirth]);
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? formalIndex + 1 : 1,
+          questionTotal: phase === "formal" ? FORMAL_QUESTIONS.length : 1,
+        }
+  );
 
   useEffect(() => {
     if (phase === "formal") {

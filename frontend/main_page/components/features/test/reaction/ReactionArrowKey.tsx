@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useReportTestChrome } from "../test-ui";
 
 type Phase = "intro" | "practice" | "formal";
 type ScreenState = "idle" | "waiting" | "ready" | "tooSoon" | "wrongKey" | "recorded";
@@ -135,6 +136,16 @@ export default function ReactionArrowKey({
   const startTimeRef = useRef<number | null>(null);
 
   const ageBand = useMemo(() => resolveAgeBand(parseAge(dateOfBirth)), [dateOfBirth]);
+
+  useReportTestChrome(
+    phase === "intro"
+      ? { screen: "intro" }
+      : {
+          screen: "active",
+          questionCurrent: phase === "formal" ? formalIndex + 1 : 1,
+          questionTotal: phase === "formal" ? FORMAL_TRIAL_COUNT : 1,
+        }
+  );
 
   useEffect(() => {
     return () => {
