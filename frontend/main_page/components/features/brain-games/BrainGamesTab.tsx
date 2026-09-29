@@ -196,12 +196,13 @@ function launchForKey(
 ): () => void {
   const launchKey = entry.launchKey;
   if (launchKey === "external") {
-    if (!entry.externalUrl) return () => {};
+    const externalUrl = entry.externalUrl;
+    if (!externalUrl) return () => {};
     return () => {
       void postGamePlayedRecord(entry.key).catch(() => {
         /* open game even if record fails */
       });
-      window.open(entry.externalUrl, "_blank");
+      window.location.href = externalUrl;
     };
   }
   return () => launchByKey(launchKey);

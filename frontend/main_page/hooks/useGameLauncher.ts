@@ -16,7 +16,6 @@ interface GameConfig {
   gameKey: string;
   apiEndpoint: string;
   gameUrl: string;
-  openInNewTab?: boolean;
 }
 
 /**
@@ -67,11 +66,7 @@ export function useGameLauncher() {
         `&diamonds=${encodeURIComponent(String(assets.diamonds ?? 0))}` +
         `&flowers=${encodeURIComponent(String(assets.flowers ?? 0))}`;
 
-      if (config.openInNewTab) {
-        window.open(url, "_blank");
-      } else {
-        window.location.href = url;
-      }
+      window.location.href = url;
     } catch (error) {
       console.error(error);
       alert(tHome("failedToStartGame"));
@@ -83,7 +78,6 @@ export function useGameLauncher() {
       gameKey: entry.apiSlug,
       apiEndpoint: `/api/games/${entry.apiSlug}/token`,
       gameUrl: entry.gameUrl,
-      openInNewTab: entry.openInNewTab,
     });
   };
 
@@ -91,11 +85,7 @@ export function useGameLauncher() {
     void postGamePlayedRecord(entry.playedRecordKey).catch(() => {
       /* still open game; count may update on next rewards fetch */
     });
-    if (entry.openInNewTab) {
-      window.open(entry.gameUrl, "_blank");
-    } else {
-      window.location.href = entry.gameUrl;
-    }
+    window.location.href = entry.gameUrl;
   };
 
   const launchByKey = (key: PortalLaunchKey) => {

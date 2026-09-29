@@ -23,7 +23,6 @@ export interface TokenGameLaunchEntry {
   /** URL path segment: `/api/games/{apiSlug}/token` */
   apiSlug: string;
   gameUrl: string;
-  openInNewTab?: boolean;
 }
 
 export interface AnalyticsGameLaunchEntry {
@@ -32,7 +31,6 @@ export interface AnalyticsGameLaunchEntry {
   gameUrl: string;
   /** `POST /api/games/play-record` game_key */
   playedRecordKey: string;
-  openInNewTab?: boolean;
 }
 
 export type GameLaunchEntry = TokenGameLaunchEntry | AnalyticsGameLaunchEntry;
@@ -45,14 +43,12 @@ export const GAME_LAUNCH_ENTRIES: GameLaunchEntry[] = [
     gameUrl:
       process.env.NEXT_PUBLIC_FOGCHESS_URL ||
       "https://fogchess.deepbraintechnology.com",
-    openInNewTab: false,
   },
   {
     kind: "token",
     launchKey: "sudokuBattle",
     apiSlug: "sudoku",
     gameUrl: "https://sudoku-battle.deepbraintechnology.com/",
-    openInNewTab: true,
   },
   {
     kind: "token",
@@ -61,21 +57,18 @@ export const GAME_LAUNCH_ENTRIES: GameLaunchEntry[] = [
     gameUrl:
       process.env.NEXT_PUBLIC_QUANTUMGO_URL ||
       "https://quantumgo.deepbraintechnology.com/",
-    openInNewTab: false,
   },
   {
     kind: "token",
     launchKey: "chessMater",
     apiSlug: "chessmater",
     gameUrl: "https://chessmater.deepbraintechnology.com/",
-    openInNewTab: false,
   },
   {
     kind: "token",
     launchKey: "chessTourmaster",
     apiSlug: "chess-tourmaster",
     gameUrl: "https://chess-tourmaster.deepbraintechnology.com",
-    openInNewTab: false,
   },
   {
     kind: "token",
@@ -84,21 +77,18 @@ export const GAME_LAUNCH_ENTRIES: GameLaunchEntry[] = [
     gameUrl:
       process.env.NEXT_PUBLIC_ONLINE_CHESS_URL ||
       "https://chess.deepbraintechnology.com",
-    openInNewTab: false,
   },
   {
     kind: "analytics",
     launchKey: "sudoku",
     gameUrl: "https://sudoku.deepbraintechnology.com/",
     playedRecordKey: "sudoku",
-    openInNewTab: true,
   },
   {
     kind: "token",
     launchKey: "numberBlast",
     apiSlug: "number-blast",
     gameUrl: "https://number-blast.deepbraintechnology.com",
-    openInNewTab: false,
   },
 ];
 
