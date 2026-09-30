@@ -22,7 +22,7 @@ python-multipart==0.0.31
 boto3==1.35.36
 
 # 邮件发送
-aiosmtplib==3.0.1
+aiosmtplib==5.1.2
 
 # Redis 缓存
 redis==5.0.1
