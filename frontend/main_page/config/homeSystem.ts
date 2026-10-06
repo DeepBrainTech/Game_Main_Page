@@ -1,3 +1,13 @@
+import type { HomeSystemTier } from "@/types/homeSystem";
+
+export const HOME_SYSTEM_TIER_ORDER: Record<HomeSystemTier, number> = {
+  free: 1,
+  common: 1,
+  rare: 2,
+  premium: 3,
+  limited: 4,
+};
+
 const configuredAssetBase = process.env.NEXT_PUBLIC_HOME_SYSTEM_ASSET_BASE_URL?.replace(/\/$/, "");
 export const HOME_SYSTEM_ASSET_BASE_URL = configuredAssetBase || "/home-system";
 

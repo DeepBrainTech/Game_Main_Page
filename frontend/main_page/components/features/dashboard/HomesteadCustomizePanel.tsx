@@ -9,6 +9,7 @@ import HomeSystemItemCard from "./HomeSystemItemCard";
 import HomeSystemPurchaseModal from "./HomeSystemPurchaseModal";
 import { useSingleRowCapacity } from "@/hooks/useSingleRowCapacity";
 import { useContainedWheelScroll } from "@/hooks/useContainedWheelScroll";
+import { HOME_SYSTEM_TIER_ORDER } from "@/config/homeSystem";
 import type {
   HomeSystemItem,
   HomeSystemLoadout,
@@ -59,7 +60,12 @@ export default function HomesteadCustomizePanel({
   const confirmingRef = useRef(false);
   const listId = useId();
   const listRef = useRef<HTMLDivElement | null>(null);
-  const slotItems = items.filter((item) => item.slot === slot);
+  const equippedItemId = loadout[slot];
+  const isItemOwned = (item: HomeSystemItem) =>
+    equippedItemId === item.item_id || ownedItemIds.has(item.item_id) || item.is_owned === true || item.is_free === true;
+  const slotItems = items.filter((item) => item.slot === slot).sort((a, b) =>
+    Number(isItemOwned(b)) - Number(isItemOwned(a)) || HOME_SYSTEM_TIER_ORDER[a.tier] - HOME_SYSTEM_TIER_ORDER[b.tier]
+  );
   useContainedWheelScroll(listRef, expanded && !loading && slotItems.length > 0);
   const { rowRef, visibleCount, capacity, cardWidth } = useSingleRowCapacity(loading ? 4 : slotItems.length);
   const hasMoreItems = (loading ? 4 : slotItems.length) > visibleCount;
@@ -68,7 +74,6 @@ export default function HomesteadCustomizePanel({
     listRef.current = node;
     rowRef(node);
   }, [rowRef]);
-  const equippedItemId = loadout[slot];
   const errorMessage = getErrorMessage(tHome, error);
 
   const canAfford = (item: HomeSystemItem) =>
@@ -114,7 +119,7 @@ export default function HomesteadCustomizePanel({
         >
           {visibleItems.map((item, index) => {
             const isEquipped = equippedItemId === item.item_id;
-            const isOwned = isEquipped || ownedItemIds.has(item.item_id) || item.is_owned === true || item.is_free === true;
+            const isOwned = isItemOwned(item);
 
             return (
               <HomeSystemItemCard
