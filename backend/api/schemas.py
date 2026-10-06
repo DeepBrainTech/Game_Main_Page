@@ -221,6 +221,13 @@ class CognitiveScoresResponse(BaseModel):
     spatial: int = 0
 
 
+class HomeSystemLoadoutBody(BaseModel):
+    """Set or clear one home-system equipment slot."""
+
+    slot: Literal["head", "body", "hand", "background", "limited"]
+    item_id: Optional[str] = Field(None, min_length=1, max_length=100)
+
+
 class LeaderboardEntry(BaseModel):
     """排行榜单项"""
     rank: int

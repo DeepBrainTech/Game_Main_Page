@@ -1,24 +1,33 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from "react";
+import { getHomeSystemBaseAsset, HOME_SYSTEM_ARTBOARD } from "@/config/homeSystem";
 
 export interface AvatarConfig {
-  bodyColor: string;
-  hatType: "none" | "cap" | "beanie" | "crown";
-  outfitType: "default" | "explorer" | "royal";
+  headAsset?: string;
+  bodyAsset?: string;
+  handAsset?: string;
+  limitedAsset?: string;
 }
 
 interface AvatarCharacterProps {
   config: AvatarConfig;
-  level: number;
   onClick?: () => void;
   direction?: "left" | "right";
+  className?: string;
+  interactive?: boolean;
+  previewFrame?: { canvas: { width: number; height: number }; bounds: readonly [number, number, number, number] };
 }
 
-export default function AvatarCharacter({ config, level, onClick, direction = "right" }: AvatarCharacterProps) {
+export default function AvatarCharacter({ config, onClick, direction = "right", className, interactive = true, previewFrame }: AvatarCharacterProps) {
   const [isAnimating, setIsAnimating] = useState(false);
-  const hatLeft = direction === "left" ? "45%" : "55%";
-  const avatarImageSrc = level >= 2 ? "/home-system/1.png" : "/home-system/0.png";
+  const avatarImageSrc = config.limitedAsset ?? getHomeSystemBaseAsset();
+  const imageStyle = {
+    transform: direction === "left" ? "scaleX(-1)" : "scaleX(1)",
+    transformOrigin: "center center",
+  };
 
   const handleClick = () => {
     if (isAnimating) return;
@@ -27,79 +36,67 @@ export default function AvatarCharacter({ config, level, onClick, direction = "r
     setTimeout(() => setIsAnimating(false), 500);
   };
 
-  const hatEmoji = (() => {
-    switch (config.hatType) {
-      case "cap":
-        return "\uD83E\uDDE2";
-      case "beanie":
-        return "\uD83E\uDDF6";
-      case "crown":
-        return "\uD83D\uDC51";
-      default:
-        return null;
-    }
-  })();
-
-  const outfitEmoji = (() => {
-    switch (config.outfitType) {
-      case "explorer":
-        return "🧥";
-      case "royal":
-        return "👘";
-      default:
-        return null;
-    }
-  })();
-
   return (
     <div
-      className={`relative h-[clamp(10rem,24vw,16rem)] w-[clamp(10rem,24vw,16rem)] cursor-pointer transition-transform duration-300 ${
+      className={`relative ${className ?? "h-[clamp(10rem,24vw,16rem)] w-[clamp(10rem,24vw,16rem)]"} ${interactive ? "cursor-pointer" : "pointer-events-none"} transition-transform duration-300 ${
         isAnimating ? "animate-bounce-custom" : ""
       }`}
-      onClick={handleClick}
+      onClick={interactive ? handleClick : undefined}
     >
-      <img
-        src={avatarImageSrc}
-        alt="home character"
-        width={300}
-        height={300}
-        draggable={false}
-        className="w-full h-full object-contain drop-shadow-xl select-none pointer-events-none"
-        style={{
-          transform: direction === "left" ? "scaleX(-1)" : "scaleX(1)",
-          transformOrigin: "center center",
-        }}
-      />
-
-      {hatEmoji && (
+      {previewFrame ? (
+        <svg className="pointer-events-none h-full w-full" viewBox={previewFrame.bounds.join(" ")} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          {[avatarImageSrc, ...(!config.limitedAsset ? [config.bodyAsset, config.handAsset, config.headAsset] : [])].filter(Boolean).map((asset, index) => (
+            <image key={`${index}-${asset}`} href={asset} width={previewFrame.canvas.width} height={previewFrame.canvas.height} />
+          ))}
+        </svg>
+      ) : <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <div
-          className="absolute text-3xl drop-shadow pointer-events-none"
+          className="relative w-full overflow-hidden"
           style={{
-            left: hatLeft,
-            top: "20%",
-            transform: "translate(-50%, -50%)",
+            ...imageStyle,
+            aspectRatio: `${HOME_SYSTEM_ARTBOARD.width} / ${HOME_SYSTEM_ARTBOARD.height}`,
           }}
         >
-          {hatEmoji}
-        </div>
-      )}
+          <img
+            src={avatarImageSrc}
+            alt="home character"
+            draggable={false}
+            className="absolute left-0 top-0 z-10 block w-full max-w-none select-none drop-shadow-xl"
+            style={{ height: "auto" }}
+          />
 
-      {outfitEmoji && (
-        <div
-          className="absolute text-2xl drop-shadow pointer-events-none"
-          style={{
-            left: "50%",
-            top: "62%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          {outfitEmoji}
+          {!config.limitedAsset && config.bodyAsset && (
+            <img
+              src={config.bodyAsset}
+              alt=""
+              draggable={false}
+              className="absolute left-0 top-0 z-20 h-auto w-full max-w-none select-none"
+            />
+          )}
+
+          {!config.limitedAsset && config.handAsset && (
+            <img
+              src={config.handAsset}
+              alt=""
+              draggable={false}
+              className="absolute left-0 top-0 z-30 h-auto w-full max-w-none select-none"
+            />
+          )}
+
+          {!config.limitedAsset && config.headAsset && (
+            <img
+              src={config.headAsset}
+              alt=""
+              draggable={false}
+              className="absolute left-0 top-0 z-40 h-auto w-full max-w-none select-none"
+            />
+          )}
         </div>
-      )}
+      </div>}
 
       {isAnimating && (
         <div
-          className="absolute bg-white px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 shadow-md animate-fade-in-up border border-gray-100 z-20 whitespace-nowrap pointer-events-none"
+          className="pointer-events-none absolute z-40 whitespace-nowrap rounded-xl border border-gray-100 bg-white px-3 py-1.5 text-xs font-bold text-gray-600 shadow-md animate-fade-in-up"
           style={{
             left: "66%",
             top: "16%",

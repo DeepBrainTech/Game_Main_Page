@@ -130,6 +130,7 @@ export default function TaskList({
   monthlyClaimed,
   onClaimTask,
 }: TaskListProps) {
+  const tTasks = useTranslations("tasks");
   const thisMonth = new Date().toISOString().slice(0, 7);
   const monthlyCount = monthlyProgress.month === thisMonth ? monthlyProgress.count : 0;
   const monthDateRange = getMonthDateRange();
@@ -147,15 +148,15 @@ export default function TaskList({
   return (
     <div className={`${dashboardCardClass} flex w-full flex-col ${dashboardPairedCardPadding}`}>
       <div className={dashboardSectionHeaderBlockClass}>
-        <h3 className={dashboardSectionTitleClass}>Brain Hub</h3>
+        <h3 className={dashboardSectionTitleClass}>{tTasks("title")}</h3>
         <span className={dashboardSectionStatusBadgeClass}>
-          {totalCompleted}/{totalGoals} Completed
+          {tTasks("completionProgress", { completed: totalCompleted, total: totalGoals })}
         </span>
       </div>
 
       <div className={dashboardSectionSubtitleRowClass}>
         <div className={dashboardSectionSubtitleClass}>
-          Daily Goals ({dailyDoneCount}/{DAILY_TASKS.length})
+          {tTasks("dailyGoals")} ({dailyDoneCount}/{DAILY_TASKS.length})
         </div>
       </div>
 
@@ -184,7 +185,7 @@ export default function TaskList({
 
         <div className="flex w-full flex-col gap-[clamp(0.6rem,1.2vw,1.25rem)]">
           <div className={dashboardSectionSubtitleClass}>
-            Monthly Goals ({monthlyDone}/1){" "}
+            {tTasks("monthlyGoals")} ({monthlyDone}/1){" "}
             <span className="font-medium text-[clamp(0.62rem,0.85vw,0.8rem)] text-sky-700/70">{monthDateRange}</span>
           </div>
           <div className="flex w-full flex-col gap-[clamp(0.4rem,0.9vw,0.75rem)]">

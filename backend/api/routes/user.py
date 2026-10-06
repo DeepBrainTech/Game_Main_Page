@@ -21,6 +21,8 @@ from models import (
     UserGamePlayByDay,
     UserGamePlayed,
     UserItemInventory,
+    UserHomeSystemInventory,
+    UserHomeSystemLoadout,
     UserAssessmentSession,
     UserAssessmentTopicStat,
     UserAssessmentAnswer,
@@ -43,9 +45,11 @@ from schemas import (
     LearningStudyTimeCreate,
     LearningPracticeReportUpsert,
     MentalMathUnlockDiamondsBody,
+    HomeSystemLoadoutBody,
 )
 from auth import get_current_active_user
 from config.shop_items import SHOP_ITEMS, get_shop_items_by_game, is_item_available_for_game
+from config.home_system import HOME_SYSTEM_ITEMS, get_home_system_item, is_free_home_system_item
 from config.learning_commerce import MENTAL_MATH_COURSE_KEY, get_learning_bundle_commerce
 from config.learning_media import get_making_whole_question_video_key
 from utils.r2_storage import generate_object_read_url
@@ -1390,6 +1394,170 @@ async def get_assets(
     """获取统一资产余额（金币/钻石/鲜花），供官网与游戏端读取。"""
     rewards = _get_or_create_rewards(db, current_user.id)
     return APIResponse(success=True, message="ok", data=_balances_dict(rewards))
+
+
+@router.get("/home-system", response_model=APIResponse)
+async def get_home_system(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Return the cosmetic catalog, ownership, and current loadout."""
+    owned_rows = (
+        db.query(UserHomeSystemInventory.item_id)
+        .filter(UserHomeSystemInventory.user_id == current_user.id)
+        .all()
+    )
+    owned_item_ids = {row[0] for row in owned_rows}
+    owned_item_ids.update(
+        item_id for item_id, item in HOME_SYSTEM_ITEMS.items() if is_free_home_system_item(item)
+    )
+
+    loadout_row = (
+        db.query(UserHomeSystemLoadout)
+        .filter(UserHomeSystemLoadout.user_id == current_user.id)
+        .first()
+    )
+    loadout = {
+        "head": loadout_row.head_item_id if loadout_row else None,
+        "body": loadout_row.body_item_id if loadout_row else None,
+        "hand": loadout_row.hand_item_id if loadout_row else None,
+        "background": loadout_row.background_item_id if loadout_row else None,
+        "limited": loadout_row.limited_item_id if loadout_row else None,
+    }
+    items = [
+        {
+            "item_id": item_id,
+            **item,
+            "is_owned": item_id in owned_item_ids,
+        }
+        for item_id, item in HOME_SYSTEM_ITEMS.items()
+    ]
+
+    return APIResponse(
+        success=True,
+        message="ok",
+        data={
+            "items": items,
+            "owned_item_ids": sorted(owned_item_ids),
+            "loadout": loadout,
+        },
+    )
+
+
+def _home_system_loadout_dict(loadout: UserHomeSystemLoadout) -> dict:
+    return {
+        slot: getattr(loadout, f"{slot}_item_id")
+        for slot in ("head", "body", "hand", "background", "limited")
+    }
+
+
+def _set_home_system_loadout_item(db: Session, user_id: int, slot: str, item_id: str | None):
+    loadout = db.query(UserHomeSystemLoadout).filter(UserHomeSystemLoadout.user_id == user_id).first()
+    if loadout is None:
+        loadout = UserHomeSystemLoadout(user_id=user_id)
+        db.add(loadout)
+    setattr(loadout, f"{slot}_item_id", item_id)
+    if item_id and slot == "limited":
+        loadout.head_item_id = None
+        loadout.body_item_id = None
+        loadout.hand_item_id = None
+    elif item_id and slot in {"head", "body", "hand"}:
+        loadout.limited_item_id = None
+    return loadout
+
+
+@router.post("/home-system/redeem", response_model=APIResponse)
+async def redeem_home_system_item(
+    item_id: str = Query(..., min_length=1, max_length=100),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    equip: bool = Query(False),
+):
+    """Permanently redeem one home-system cosmetic."""
+    item = get_home_system_item(item_id)
+    if item is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid_home_system_item")
+    if is_free_home_system_item(item):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="item_is_free")
+
+    existing = (
+        db.query(UserHomeSystemInventory)
+        .filter(
+            UserHomeSystemInventory.user_id == current_user.id,
+            UserHomeSystemInventory.item_id == item_id,
+        )
+        .first()
+    )
+    if existing is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="already_owned")
+
+    rewards = _get_or_create_rewards(db, current_user.id)
+    cost = item["cost"]
+    if (
+        rewards.coins < cost["coins"]
+        or rewards.diamonds < cost["diamonds"]
+        or rewards.flowers < cost["flowers"]
+    ):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="insufficient_assets")
+
+    rewards.coins -= cost["coins"]
+    rewards.diamonds -= cost["diamonds"]
+    rewards.flowers -= cost["flowers"]
+    db.add(UserHomeSystemInventory(user_id=current_user.id, item_id=item_id))
+    db.add(rewards)
+    loadout = _set_home_system_loadout_item(db, current_user.id, item["slot"], item_id) if equip else None
+    db.commit()
+    db.refresh(rewards)
+
+    return APIResponse(
+        success=True,
+        message="ok",
+        data={
+            "item_id": item_id,
+            "item_name": item["name"],
+            "cost": cost,
+            "assets": _balances_dict(rewards),
+            "loadout": _home_system_loadout_dict(loadout) if loadout is not None else None,
+        },
+    )
+
+
+@router.put("/home-system/loadout", response_model=APIResponse)
+async def update_home_system_loadout(
+    body: HomeSystemLoadoutBody,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Equip or clear one home-system slot."""
+    item = get_home_system_item(body.item_id) if body.item_id else None
+    if body.item_id and item is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid_home_system_item")
+    if item and item["slot"] != body.slot:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="item_slot_mismatch")
+
+    if item and not is_free_home_system_item(item):
+        owned = (
+            db.query(UserHomeSystemInventory)
+            .filter(
+                UserHomeSystemInventory.user_id == current_user.id,
+                UserHomeSystemInventory.item_id == body.item_id,
+            )
+            .first()
+        )
+        if owned is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="item_not_owned")
+
+    loadout = _set_home_system_loadout_item(db, current_user.id, body.slot, body.item_id)
+    db.commit()
+    db.refresh(loadout)
+
+    return APIResponse(
+        success=True,
+        message="ok",
+        data={
+            "loadout": _home_system_loadout_dict(loadout)
+        },
+    )
 
 
 @router.get("/shop/items", response_model=APIResponse)

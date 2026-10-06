@@ -1,19 +1,28 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 import AvatarCharacter, { type AvatarConfig } from "./AvatarCharacter";
+import HomesteadCustomizePanel from "./HomesteadCustomizePanel";
 import WukooChatPrompt from "./WukooChatPrompt";
 import WukooConversationPanel from "./WukooConversationPanel";
 import WukooMessageBubble from "./WukooMessageBubble";
 import { sendMonkeyChatMessage, type MonkeyChatMessage } from "@/services/monkeyChatApi";
+import { HOME_SYSTEM_DEFAULT_BACKGROUND_ID, getHomeSystemVisual } from "@/config/homeSystem";
+import { useHomeSystem } from "@/hooks/useHomeSystem";
+import type { HomeSystemSlot } from "@/types/homeSystem";
 
 interface HomesteadBlockProps {
-  level: number;
   userAvatarUrl?: string | null;
-  activeCustomizeTab: "head" | "body" | "hand" | "background" | null;
+  activeCustomizeTab: HomeSystemSlot | null;
   menuOpen: boolean;
+  coins: number;
+  diamonds: number;
   onMenuOpenChange?: (isOpen: boolean) => void;
+  onCustomizeTabChange?: (slot: HomeSystemSlot) => void;
 }
 
 export type SceneType = "island";
@@ -39,21 +48,38 @@ function getBubblePlacement(position: { x: number; y: number }) {
  * 家园主场景：保持原样展示，配置面板从容器下方展开
  */
 export default function HomesteadBlock({
-  level,
   userAvatarUrl = null,
   activeCustomizeTab,
   menuOpen,
+  coins,
+  diamonds,
   onMenuOpenChange,
+  onCustomizeTabChange,
 }: HomesteadBlockProps) {
   const tHome = useTranslations("dashboard");
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const [avatarConfig] = useState<AvatarConfig>({
-    bodyColor: "#1A1A1A",
-    hatType: "none",
-    outfitType: "default",
-  });
+  const {
+    items,
+    ownedItemIds,
+    loadout,
+    loading: homeSystemLoading,
+    busyItemId,
+    error: homeSystemError,
+    redeem,
+    equip,
+  } = useHomeSystem();
+  const selectedHead = getHomeSystemVisual(loadout.head);
+  const selectedBody = getHomeSystemVisual(loadout.body);
+  const selectedHand = getHomeSystemVisual(loadout.hand);
+  const selectedBackground = getHomeSystemVisual(loadout.background || HOME_SYSTEM_DEFAULT_BACKGROUND_ID);
+  const selectedLimited = getHomeSystemVisual(loadout.limited);
+  const avatarConfig: AvatarConfig = {
+    headAsset: selectedHead?.primary,
+    bodyAsset: selectedBody?.primary,
+    handAsset: selectedHand?.primary,
+    limitedAsset: selectedLimited?.primary,
+  };
   const scene: SceneType = "island";
   const HOME_POSITION = { x: 50, y: 78 };
   const BOUNDS = { xMin: 20, xMax: 80, yMin: 20, yMax: 84 };
@@ -179,11 +205,17 @@ export default function HomesteadBlock({
   }, []);
 
   return (
-    <div className="relative flex h-full min-h-[clamp(19rem,40svh,27.5rem)] flex-col rounded-3xl border border-amber-100/50 p-[clamp(0.75rem,2vw,1.5rem)] shadow-sm transition-all select-none md:min-h-[clamp(21rem,44svh,27.5rem)]">
-      {/* Clips scene + avatar + chat to the card; customize panel is a sibling so it is not cut off. */}
-      <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
+    <div className="relative flex min-h-[clamp(19rem,40svh,27.5rem)] flex-col select-none md:min-h-[clamp(21rem,44svh,27.5rem)]">
+      <div className="relative aspect-[1000/478] min-h-[clamp(19rem,40svh,27.5rem)] overflow-hidden rounded-3xl border border-amber-100/50 shadow-sm md:min-h-[clamp(21rem,44svh,27.5rem)]">
         <div className="absolute inset-0 z-0">
-          {scene === "island" && (
+          {selectedBackground?.primary ? (
+            <img
+              src={selectedBackground.primary}
+              alt=""
+              draggable={false}
+              className="h-full w-full select-none object-cover"
+            />
+          ) : scene === "island" ? (
             <>
               <div className="absolute inset-0 bg-gradient-to-b from-[#87CEEB] via-[#98D8F0] to-[#5BA3E8]" />
               <div className="absolute bottom-0 left-0 right-0 h-[45%] bg-gradient-to-t from-[#D4A574] via-[#E8C9A0] to-[#7EC8E3]" />
@@ -192,7 +224,7 @@ export default function HomesteadBlock({
                 <path d="M0,14 Q80,8 160,14 T320,14 T400,14" fill="none" stroke="white" strokeWidth="2" />
               </svg>
             </>
-          )}
+          ) : null}
         </div>
 
         <div
@@ -225,7 +257,7 @@ export default function HomesteadBlock({
           }}
         >
           <div className={`relative min-w-0 ${isWalking ? "avatar-walk" : ""}`}>
-            <AvatarCharacter config={avatarConfig} level={level} direction={direction} />
+            <AvatarCharacter config={avatarConfig} direction={direction} />
           </div>
           <div className="absolute bottom-2 left-1/2 -z-10 h-4 w-24 -translate-x-1/2 rounded-[100%] bg-black/10 blur-sm" />
         </div>
@@ -257,35 +289,102 @@ export default function HomesteadBlock({
         </div>
       </div>
 
-      <div
-        className={`absolute left-0 right-0 top-[calc(100%+clamp(3.5rem,8svh,6rem))] z-40 rounded-b-3xl bg-white px-[clamp(1rem,2vw,1.25rem)] pb-[clamp(1rem,2vw,1.25rem)] pt-3 transition-opacity duration-300 sm:top-[calc(100%+clamp(2rem,5svh,3.5rem))] ${
-          menuOpen && activeCustomizeTab ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      >
-        <button
-          type="button"
-          onClick={() => onMenuOpenChange?.(false)}
-          className="absolute right-4 top-3 p-1 text-gray-400 hover:text-gray-600"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+      <div className="relative z-20 mt-[clamp(0.75rem,2vw,1.5rem)] flex flex-wrap items-center justify-between gap-3">
+        <div className="font-['Titan_One'] text-2xl font-normal leading-8 tracking-wide text-sky-700">
+          {tHome("homesteadCharacterName")}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {(
+            [
+              {
+                key: "head" as const,
+                iconSrc: "/home-system/head/head.svg",
+                label: tHome("homesteadHead"),
+              },
+              {
+                key: "body" as const,
+                iconSrc: "/home-system/body/body.svg",
+                label: tHome("homesteadBody"),
+              },
+              {
+                key: "hand" as const,
+                iconSrc: "/home-system/hand/hand.svg",
+                label: tHome("homesteadHand"),
+              },
+              {
+                key: "background" as const,
+                iconSrc: "/home-system/background/background.svg",
+                label: tHome("homesteadBackground"),
+              },
+              {
+                key: "limited" as const,
+                iconSrc: "/dashboard/Star.svg",
+                label: tHome("homesteadLimited"),
+              },
+            ] as const
+          ).map((tab) => {
+            const isActive = menuOpen && activeCustomizeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  if (menuOpen && activeCustomizeTab === tab.key) {
+                    onMenuOpenChange?.(false);
+                    return;
+                  }
+                  onCustomizeTabChange?.(tab.key);
+                  onMenuOpenChange?.(true);
+                }}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-2 font-app-body text-base font-medium leading-5 transition-colors"
+                style={{
+                  backgroundColor: isActive ? "#E45C44" : "#EDF4FC",
+                  color: isActive ? "#FFFFFF" : "#045E96",
+                }}
+              >
+                <Image
+                  src={tab.iconSrc}
+                  alt={tab.label}
+                  width={16}
+                  height={16}
+                  className={`h-4 w-4 ${isActive ? "brightness-0 invert" : ""}`}
+                />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        <div className="pt-2">
-          {activeCustomizeTab === "background" ? (
-            <button
-              type="button"
-              className="min-w-[clamp(6.5rem,18vw,8rem)] rounded-2xl border-2 border-[#E45C44] bg-[#FFF5F5] p-3 transition"
-            >
-              <div className="h-14 rounded-xl bg-gradient-to-b from-sky-500 to-sky-100" />
-              <div className="mt-2 text-center text-lg text-sky-700">Free</div>
-            </button>
-          ) : activeCustomizeTab ? (
-            <div className="py-6 text-center text-sm text-slate-500">
-              {tHome("homesteadNoItemsYet")}
+      <div
+        className={`relative z-30 mt-3 grid overflow-hidden transition-[grid-template-rows,opacity,transform] duration-300 ease-out ${
+          menuOpen && activeCustomizeTab
+            ? "grid-rows-[1fr] translate-y-0 opacity-100"
+            : "pointer-events-none grid-rows-[0fr] -translate-y-2 opacity-0"
+        }`}
+        aria-hidden={!menuOpen || !activeCustomizeTab}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="relative px-[clamp(1rem,2vw,1.25rem)] pb-[clamp(1rem,2vw,1.25rem)] pt-3">
+            <div className="overflow-hidden">
+              {activeCustomizeTab ? (
+                <HomesteadCustomizePanel
+                  key={activeCustomizeTab}
+                  slot={activeCustomizeTab}
+                  items={items}
+                  ownedItemIds={ownedItemIds}
+                  loadout={loadout}
+                  coins={coins}
+                  diamonds={diamonds}
+                  busyItemId={busyItemId}
+                  error={homeSystemError}
+                  loading={homeSystemLoading}
+                  onRedeem={redeem}
+                  onEquip={equip}
+                />
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
 

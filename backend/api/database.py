@@ -1,11 +1,12 @@
 """
 数据库连接和会话管理
 """
-from sqlalchemy import create_engine, text
+from sqlalchemy import bindparam, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
+from config.home_system import HOME_SYSTEM_HAND_ITEM_IDS
 
 load_dotenv()
 
@@ -75,6 +76,17 @@ def ensure_users_table_compatibility():
         conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_object_key VARCHAR(512)"))
         # 兼容旧库：统一资产账户新增鲜花字段
         conn.execute(text("ALTER TABLE user_rewards ADD COLUMN IF NOT EXISTS flowers INTEGER DEFAULT 0"))
+        conn.execute(text("ALTER TABLE user_home_system_loadouts ADD COLUMN IF NOT EXISTS limited_item_id VARCHAR(100)"))
+        conn.execute(text("ALTER TABLE user_home_system_loadouts ADD COLUMN IF NOT EXISTS hand_item_id VARCHAR(100)"))
+        # Preserve existing ownership IDs while moving hand equipment out of the body slot.
+        conn.execute(
+            text("""
+                UPDATE user_home_system_loadouts
+                SET hand_item_id = COALESCE(hand_item_id, body_item_id), body_item_id = NULL
+                WHERE body_item_id IN :hand_item_ids
+            """).bindparams(bindparam("hand_item_ids", expanding=True)),
+            {"hand_item_ids": HOME_SYSTEM_HAND_ITEM_IDS},
+        )
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS game_likes (
                 id SERIAL PRIMARY KEY,

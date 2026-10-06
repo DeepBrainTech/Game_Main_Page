@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import HomesteadBlock from "./HomesteadBlock";
 import CheckInCalendar from "./CheckInCalendar";
 import TaskList from "./TaskList";
@@ -12,6 +11,7 @@ import { useCognitiveScores } from "@/hooks/useCognitiveScores";
 import StatCard from "@/components/features/dashboard/StatCard";
 import BrainpowerPanel from "@/components/features/dashboard/BrainpowerPanel";
 import { dashboardCardClass } from "@/components/features/dashboard/dashboardCardStyles";
+import type { HomeSystemSlot } from "@/types/homeSystem";
 import {
   formatLocalDateKey,
   formatWeekDateRange,
@@ -25,8 +25,6 @@ interface HomeTabProps {
   username?: string;
   avatarUrl?: string | null;
 }
-
-type HomesteadCustomizeTab = "head" | "body" | "hand" | "background";
 
 /**
  * Dashboard home content: KPI + stage + check-in/tasks + brainpower panel
@@ -52,7 +50,7 @@ export default function HomeTab({ username = "", avatarUrl = null }: HomeTabProp
     claimTaskReward,
   } = useRewards();
   const { scores: radarScores } = useCognitiveScores();
-  const [activeHomesteadTab, setActiveHomesteadTab] = useState<HomesteadCustomizeTab | null>(null);
+  const [activeHomesteadTab, setActiveHomesteadTab] = useState<HomeSystemSlot | null>(null);
   const [isHomesteadMenuOpen, setIsHomesteadMenuOpen] = useState(false);
   const [showStreakRewardDialog, setShowStreakRewardDialog] = useState(false);
   const [streakReward, setStreakReward] = useState<StreakRewardState>({
@@ -68,8 +66,6 @@ export default function HomeTab({ username = "", avatarUrl = null }: HomeTabProp
   const [weeklyProgressDays, setWeeklyProgressDays] = useState<WeeklyProgressDay[]>([]);
 
   const totalPoints = coins + diamonds * 10 + flowers * 3;
-  const expPerLevel = 120;
-  const level = Math.max(1, Math.floor(totalPoints / expPerLevel) + 1);
 
   const handleCheckIn = async () => {
     const result = await doCheckIn();
@@ -111,7 +107,7 @@ export default function HomeTab({ username = "", avatarUrl = null }: HomeTabProp
 
   return (
     <div className="space-y-5 pb-10">
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           iconSrc="/dashboard/Cup.svg"
           iconAlt={tHome("totalPoints")}
@@ -133,96 +129,24 @@ export default function HomeTab({ username = "", avatarUrl = null }: HomeTabProp
           title={tHome("gamesPlayed")}
           value={playedGameCount.toLocaleString()}
         />
-        <StatCard
-          iconSrc="/dashboard/level.svg"
-          iconAlt={tHome("level")}
-          iconBgColor="#FFECD2"
-          title={tHome("level")}
-          value={String(level)}
-        />
       </section>
 
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         <div className="space-y-5 xl:col-span-8">
           <div
-            className={`${dashboardCardClass} relative min-h-[clamp(20rem,42svh,31.25rem)] overflow-visible p-4 transition-[padding] duration-300 md:min-h-[clamp(22rem,46svh,31.25rem)] ${
-              isHomesteadMenuOpen ? "pb-[clamp(12rem,32svh,20rem)] sm:pb-[clamp(11rem,28svh,16.25rem)]" : ""
-            }`}
+            className={`${dashboardCardClass} relative min-h-[clamp(20rem,42svh,31.25rem)] overflow-visible p-4 md:min-h-[clamp(22rem,46svh,31.25rem)]`}
           >
             <HomesteadBlock
-              level={level}
               userAvatarUrl={avatarUrl}
+              coins={coins}
+              diamonds={diamonds}
               activeCustomizeTab={activeHomesteadTab}
               menuOpen={isHomesteadMenuOpen}
               onMenuOpenChange={(isOpen) => {
                 setIsHomesteadMenuOpen(isOpen);
-                if (!isOpen) {
-                  setActiveHomesteadTab(null);
-                }
               }}
+              onCustomizeTabChange={setActiveHomesteadTab}
             />
-            <div className="relative z-20 mt-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="font-['Titan_One'] text-2xl font-normal leading-8 tracking-wide text-sky-700">
-                {tHome("homesteadCharacterName")}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {(
-                  [
-                    {
-                      key: "head" as const,
-                      iconSrc: "/home-system/head/head.svg",
-                      label: tHome("homesteadHead"),
-                    },
-                    {
-                      key: "body" as const,
-                      iconSrc: "/home-system/body/body.svg",
-                      label: tHome("homesteadBody"),
-                    },
-                    {
-                      key: "hand" as const,
-                      iconSrc: "/home-system/hand/hand.svg",
-                      label: tHome("homesteadHand"),
-                    },
-                    {
-                      key: "background" as const,
-                      iconSrc: "/home-system/background/background.svg",
-                      label: tHome("homesteadBackground"),
-                    },
-                  ] as const
-                ).map((tab) => {
-                  const isActive = isHomesteadMenuOpen && activeHomesteadTab === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => {
-                        if (isHomesteadMenuOpen && activeHomesteadTab === tab.key) {
-                          setIsHomesteadMenuOpen(false);
-                          setActiveHomesteadTab(null);
-                          return;
-                        }
-                        setActiveHomesteadTab(tab.key);
-                        setIsHomesteadMenuOpen(true);
-                      }}
-                      className="inline-flex items-center gap-2 rounded-full px-4 py-2 font-app-body text-base font-medium leading-5 transition-colors"
-                      style={{
-                        backgroundColor: isActive ? "#E45C44" : "#EDF4FC",
-                        color: isActive ? "#FFFFFF" : "#045E96",
-                      }}
-                    >
-                      <Image
-                        src={tab.iconSrc}
-                        alt={tab.label}
-                        width={16}
-                        height={16}
-                        className={`h-4 w-4 ${isActive ? "brightness-0 invert" : ""}`}
-                      />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">

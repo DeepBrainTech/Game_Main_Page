@@ -18,6 +18,20 @@ export { fetchCognitiveScores, updateCognitiveScores } from "@/services/cognitiv
 
 export { fetchShopItems, fetchShopInventory, redeemShopItem } from "@/services/shopApi";
 
+export type {
+  HomeSystemCost,
+  HomeSystemData,
+  HomeSystemItem,
+  HomeSystemLoadout,
+  HomeSystemSlot,
+  HomeSystemTier,
+} from "@/types/homeSystem";
+export {
+  fetchHomeSystem,
+  redeemHomeSystemItem,
+  updateHomeSystemLoadout,
+} from "@/services/homeSystemApi";
+
 export type { GameLikeState } from "@/services/gamesApi";
 export { postGamePlayedRecord, fetchGameLikes, likeGame, unlikeGame } from "@/services/gamesApi";
 

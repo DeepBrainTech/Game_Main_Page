@@ -250,6 +250,33 @@ class UserItemInventory(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class UserHomeSystemInventory(Base):
+    """Permanent cosmetic ownership for the home-system avatar."""
+
+    __tablename__ = "user_home_system_inventories"
+    __table_args__ = (UniqueConstraint("user_id", "item_id", name="uq_user_home_system_item"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    item_id = Column(String(100), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class UserHomeSystemLoadout(Base):
+    """The currently equipped home-system cosmetic IDs."""
+
+    __tablename__ = "user_home_system_loadouts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True, index=True)
+    head_item_id = Column(String(100), nullable=True)
+    body_item_id = Column(String(100), nullable=True)
+    hand_item_id = Column(String(100), nullable=True)
+    background_item_id = Column(String(100), nullable=True)
+    limited_item_id = Column(String(100), nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 class UserCognitiveScores(Base):
     """用户六维认知分数（雷达图）"""
     __tablename__ = "user_cognitive_scores"
