@@ -151,17 +151,16 @@ export default function AppHeader({
               open={notifications.open}
               panelPosition={notifications.panelPosition}
               loading={notifications.loading}
+              loadingMore={notifications.loadingMore}
               notifications={notifications.notifications}
               listNeedsScroll={notifications.listNeedsScroll}
               listScrollMaxHeight={notifications.listScrollMaxHeight}
-              scrollActive={notifications.scrollActive}
-              scrollbar={notifications.scrollbar}
               panelRef={notifications.panelRef}
               scrollRef={notifications.scrollRef}
               listRef={notifications.listRef}
               onMarkAllRead={notifications.markAllRead}
               onMarkRead={notifications.markAsRead}
-              onScroll={notifications.revealScrollbar}
+              onScroll={notifications.handleListScroll}
             />
           </div>
 

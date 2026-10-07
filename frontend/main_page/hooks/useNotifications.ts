@@ -6,6 +6,7 @@ import {
   fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  subscribeToNotificationEvents,
 } from "@/services/notificationsApi";
 import {
   mapNotification,
@@ -22,7 +23,15 @@ export function useNotifications(activeTab: string | null) {
   const tNotifications = useTranslations("notifications");
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const refreshingRef = useRef(false);
+  const refreshAgainRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
+  const cursorRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const bellRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -35,18 +44,71 @@ export function useNotifications(activeTab: string | null) {
     width: number;
     arrowRight: number;
   } | null>(null);
-  const scrollIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [scrollActive, setScrollActive] = useState(false);
-  const [scrollbar, setScrollbar] = useState({
-    canScroll: false,
-    thumbHeight: 176,
-    thumbTop: 0,
-  });
-
   const mapRow = useCallback(
     (row: Parameters<typeof mapNotification>[0]) => mapNotification(row, tNotifications),
     [tNotifications],
   );
+
+  const refreshNotifications = useCallback(async function refresh(showLoading = false) {
+    if (refreshingRef.current) {
+      refreshAgainRef.current = true;
+      return;
+    }
+    refreshingRef.current = true;
+    if (showLoading) setLoading(true);
+    try {
+      const { notifications: rows, unread_count } = await fetchNotifications();
+      setUnreadCount(unread_count);
+      setNotifications((current) => {
+        const currentById = new Map(current.map((item) => [item.id, item] as const));
+        const latest = rows.map((row) => {
+          const mapped = mapRow(row);
+          const existing = currentById.get(mapped.id);
+          return existing && !existing.unread
+            ? { ...mapped, unread: false }
+            : mapped;
+        });
+        const latestIds = new Set(latest.map((item) => item.id));
+        return [...latest, ...current.filter((item) => !latestIds.has(item.id))];
+      });
+      if (cursorRef.current === null) {
+        if (rows.length > 0) cursorRef.current = rows[rows.length - 1].id;
+        hasMoreRef.current = rows.length === 20;
+        setHasMore(hasMoreRef.current);
+      }
+    } catch {
+      // Keep the current feed visible when a background refresh fails.
+    } finally {
+      refreshingRef.current = false;
+      if (showLoading) setLoading(false);
+      if (refreshAgainRef.current) {
+        refreshAgainRef.current = false;
+        void refresh();
+      }
+    }
+  }, [mapRow]);
+
+  const loadMoreNotifications = useCallback(async () => {
+    if (!hasMoreRef.current || loadingMoreRef.current || cursorRef.current === null) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    try {
+      const { notifications: rows } = await fetchNotifications(20, cursorRef.current);
+      const older = rows.map(mapRow);
+      if (rows.length > 0) cursorRef.current = rows[rows.length - 1].id;
+      hasMoreRef.current = rows.length === 20;
+      setHasMore(hasMoreRef.current);
+      setNotifications((current) => {
+        const existingIds = new Set(current.map((item) => item.id));
+        return [...current, ...older.filter((item) => !existingIds.has(item.id))];
+      });
+    } catch {
+      // Keep the current feed available and retry when the user scrolls again.
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [mapRow]);
 
   const updateListHeight = useCallback(() => {
     const listRoot = listRef.current;
@@ -73,40 +135,9 @@ export function useNotifications(activeTab: string | null) {
     setPanelPosition({ top, left, width: panelWidth, arrowRight });
   }, []);
 
-  const updateScrollbar = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const { scrollHeight, clientHeight, scrollTop } = el;
-    const canScroll = scrollHeight > clientHeight + 1;
-
-    if (!canScroll) {
-      setScrollbar({ canScroll: false, thumbHeight: 176, thumbTop: 0 });
-      return;
-    }
-
-    const trackHeight = clientHeight;
-    const thumbHeight = Math.max(44, Math.round((clientHeight / scrollHeight) * trackHeight));
-    const maxThumbTop = trackHeight - thumbHeight;
-    const scrollRatio = scrollTop / (scrollHeight - clientHeight);
-    const thumbTop = Math.round(scrollRatio * maxThumbTop);
-
-    setScrollbar({ canScroll: true, thumbHeight, thumbTop });
-  }, []);
-
-  const revealScrollbar = useCallback(() => {
-    updateScrollbar();
-    setScrollActive(true);
-    if (scrollIdleRef.current) {
-      clearTimeout(scrollIdleRef.current);
-    }
-    scrollIdleRef.current = setTimeout(() => {
-      setScrollActive(false);
-    }, 700);
-  }, [updateScrollbar]);
-
-  const hasUnread = notifications.some((n) => n.unread);
-  const listNeedsScroll = !loading && notifications.length > NOTIFICATION_VISIBLE_LIMIT;
+  const hasUnread = unreadCount > 0;
+  const listNeedsScroll =
+    !loading && (notifications.length > NOTIFICATION_VISIBLE_LIMIT || hasMore);
   const listScrollMaxHeight =
     listMaxHeight !== null
       ? listMaxHeight + NOTIFICATION_LIST_PADDING_Y_PX
@@ -123,10 +154,12 @@ export function useNotifications(activeTab: string | null) {
       setNotifications((current) =>
         current.map((n) => (n.id === notificationId ? { ...n, unread: false } : n)),
       );
+      setUnreadCount((count) => Math.max(0, count - 1));
       markNotificationRead(notificationId).catch(() => {
         setNotifications((current) =>
           current.map((n) => (n.id === notificationId ? { ...n, unread: true } : n)),
         );
+        setUnreadCount((count) => count + 1);
       });
     },
     [notifications],
@@ -134,46 +167,58 @@ export function useNotifications(activeTab: string | null) {
 
   const markAllRead = useCallback(() => {
     setNotifications((current) => current.map((n) => ({ ...n, unread: false })));
-    markAllNotificationsRead().catch(() => {});
-  }, []);
+    setUnreadCount(0);
+    markAllNotificationsRead().catch(() => {
+      void refreshNotifications();
+    });
+  }, [refreshNotifications]);
+
+  const handleListScroll = useCallback(() => {
+    const element = scrollRef.current;
+    if (
+      element &&
+      hasMoreRef.current &&
+      element.scrollHeight - element.scrollTop - element.clientHeight < 160
+    ) {
+      void loadMoreNotifications();
+    }
+  }, [loadMoreNotifications]);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    fetchNotifications()
-      .then(({ notifications: rows }) => {
-        if (!cancelled) {
-          setNotifications(rows.map(mapRow));
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setNotifications([]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [mapRow]);
-
-  useEffect(() => {
-    return () => {
-      if (scrollIdleRef.current) {
-        clearTimeout(scrollIdleRef.current);
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshNotifications();
       }
     };
-  }, []);
 
-  useEffect(() => {
-    if (!open) {
-      setScrollActive(false);
-    }
-  }, [open]);
+    let fallbackInterval: number | null = null;
+    const setFallbackPolling = (enabled: boolean) => {
+      if (enabled && fallbackInterval === null) {
+        fallbackInterval = window.setInterval(refreshIfVisible, 30_000);
+      } else if (!enabled && fallbackInterval !== null) {
+        window.clearInterval(fallbackInterval);
+        fallbackInterval = null;
+      }
+    };
+
+    void refreshNotifications(true);
+    const eventSource = subscribeToNotificationEvents(
+      refreshIfVisible,
+      (connected) => {
+        setFallbackPolling(!connected);
+        if (connected) refreshIfVisible();
+      },
+    );
+    if (!eventSource) setFallbackPolling(true);
+    window.addEventListener("focus", refreshIfVisible);
+    document.addEventListener("visibilitychange", refreshIfVisible);
+    return () => {
+      eventSource?.close();
+      setFallbackPolling(false);
+      window.removeEventListener("focus", refreshIfVisible);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+    };
+  }, [refreshNotifications]);
 
   useLayoutEffect(() => {
     if (!open) {
@@ -200,7 +245,6 @@ export function useNotifications(activeTab: string | null) {
     if (!open) return;
 
     updatePanelPosition();
-    updateScrollbar();
 
     const el = scrollRef.current;
     const listRoot = listRef.current;
@@ -208,7 +252,6 @@ export function useNotifications(activeTab: string | null) {
       el || listRoot
         ? new ResizeObserver(() => {
             updateListHeight();
-            updateScrollbar();
             updatePanelPosition();
           })
         : null;
@@ -217,7 +260,6 @@ export function useNotifications(activeTab: string | null) {
 
     const onLayoutChange = () => {
       updatePanelPosition();
-      updateScrollbar();
     };
     window.addEventListener("resize", onLayoutChange);
     window.addEventListener("scroll", onLayoutChange, true);
@@ -227,31 +269,7 @@ export function useNotifications(activeTab: string | null) {
       window.removeEventListener("resize", onLayoutChange);
       window.removeEventListener("scroll", onLayoutChange, true);
     };
-  }, [open, notifications, loading, updatePanelPosition, updateScrollbar, updateListHeight]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const panel = panelRef.current;
-    if (!panel) return;
-
-    const onWheel = (event: WheelEvent) => {
-      if (!panel.contains(event.target as Node)) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      const scrollEl = scrollRef.current;
-      if (scrollEl && scrollEl.scrollHeight > scrollEl.clientHeight + 1) {
-        scrollEl.scrollTop += event.deltaY;
-      }
-
-      revealScrollbar();
-    };
-
-    panel.addEventListener("wheel", onWheel, { passive: false });
-    return () => panel.removeEventListener("wheel", onWheel);
-  }, [open, revealScrollbar]);
+  }, [open, notifications, loading, updatePanelPosition, updateListHeight]);
 
   useEffect(() => {
     if (!open) return;
@@ -271,12 +289,12 @@ export function useNotifications(activeTab: string | null) {
     setOpen,
     notifications,
     loading,
+    loadingMore,
     hasUnread,
     listNeedsScroll,
     listScrollMaxHeight,
+    hasMore,
     panelPosition,
-    scrollActive,
-    scrollbar,
     containerRef,
     bellRef,
     listRef,
@@ -284,6 +302,6 @@ export function useNotifications(activeTab: string | null) {
     scrollRef,
     markAsRead,
     markAllRead,
-    revealScrollbar,
+    handleListScroll,
   };
 }

@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from models import UserNotification
+from utils.notification_events import schedule_notification_event
 
 
 def create_user_notification(
@@ -40,10 +41,18 @@ def create_user_notification(
         notification_metadata=metadata or {},
     )
     db.add(notification)
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        return None
-    db.refresh(notification)
+    schedule_notification_event(db, user_id)
+    if commit:
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            return None
+        db.refresh(notification)
+    else:
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            return None
     return notification

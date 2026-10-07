@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from models import User, UserNotification
 from schemas import APIResponse
+from utils.notification_events import schedule_notification_event
 
 
 def _notification_payload(row: UserNotification) -> dict:
@@ -22,11 +23,15 @@ def _notification_payload(row: UserNotification) -> dict:
     }
 
 
-async def list_notifications(limit: int, current_user: User, db: Session):
+async def list_notifications(
+    limit: int, current_user: User, db: Session, before_id: int | None = None
+):
+    query = db.query(UserNotification).filter(UserNotification.user_id == current_user.id)
+    if before_id is not None:
+        query = query.filter(UserNotification.id < before_id)
     rows = (
-        db.query(UserNotification)
-        .filter(UserNotification.user_id == current_user.id)
-        .order_by(UserNotification.created_at.desc(), UserNotification.id.desc())
+        query
+        .order_by(UserNotification.id.desc())
         .limit(limit)
         .all()
     )
@@ -64,6 +69,7 @@ async def mark_all_notifications_read(current_user: User, db: Session):
             synchronize_session=False,
         )
     )
+    schedule_notification_event(db, current_user.id)
     db.commit()
     return APIResponse(success=True, message="ok", data={"read_at": now.isoformat()})
 
@@ -83,5 +89,6 @@ async def mark_notification_read(notification_id: int, current_user: User, db: S
     row.is_read = True
     row.read_at = now
     db.add(row)
+    schedule_notification_event(db, current_user.id)
     db.commit()
     return APIResponse(success=True, message="ok", data={"read_at": now.isoformat()})

@@ -8,11 +8,10 @@ interface NotificationPanelProps {
   open: boolean;
   panelPosition: { top: number; left: number; width: number; arrowRight: number } | null;
   loading: boolean;
+  loadingMore: boolean;
   notifications: NotificationItem[];
   listNeedsScroll: boolean;
   listScrollMaxHeight: number | null;
-  scrollActive: boolean;
-  scrollbar: { canScroll: boolean; thumbHeight: number; thumbTop: number };
   panelRef: React.Ref<HTMLDivElement>;
   scrollRef: React.Ref<HTMLDivElement>;
   listRef: React.Ref<HTMLDivElement>;
@@ -25,11 +24,10 @@ export default function NotificationPanel({
   open,
   panelPosition,
   loading,
+  loadingMore,
   notifications,
   listNeedsScroll,
   listScrollMaxHeight,
-  scrollActive,
-  scrollbar,
   panelRef,
   scrollRef,
   listRef,
@@ -76,10 +74,18 @@ export default function NotificationPanel({
         <div className="relative">
           <div
             ref={scrollRef}
-            className={`notification-panel-scroll-hide overscroll-contain px-3 py-3 ${
+            className={`overscroll-contain px-3 py-3 ${
               listNeedsScroll ? "overflow-y-auto" : "overflow-y-visible"
             }`}
-            style={listScrollMaxHeight !== null ? { maxHeight: listScrollMaxHeight } : undefined}
+            style={
+              listScrollMaxHeight !== null
+                ? {
+                    maxHeight: `min(${listScrollMaxHeight}px, 60vh)`,
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#7A7A7A #E8E8E8",
+                  }
+                : undefined
+            }
             onScroll={onScroll}
           >
             <div ref={listRef} className="space-y-3">
@@ -149,25 +155,14 @@ export default function NotificationPanel({
                     </div>
                   </div>
                 ))}
+              {loadingMore ? (
+                <p role="status" className="py-2 text-center text-xs text-slate-400">
+                  {t("loadingMore")}
+                </p>
+              ) : null}
             </div>
           </div>
 
-          <div
-            className={`pointer-events-none absolute bottom-3 right-0 top-3 overflow-hidden transition-opacity duration-200 ${
-              scrollActive && scrollbar.canScroll ? "w-2.5 opacity-100" : "w-2.5 opacity-0"
-            }`}
-            aria-hidden
-          >
-            <div className="relative h-full w-2.5 rounded-[100px] bg-[#E8E8E8]">
-              <div
-                className="absolute left-0 w-2.5 rounded-[100px] bg-[#7A7A7A]"
-                style={{
-                  height: `${scrollbar.thumbHeight}px`,
-                  top: `${scrollbar.thumbTop}px`,
-                }}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </div>

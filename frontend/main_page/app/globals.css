@@ -410,16 +410,6 @@ body {
     }
   }
 
-  .notification-panel-scroll-hide {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .notification-panel-scroll-hide::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
-
   /**
    * Cognitive test runner typography (six dimensions)
    * Session/meta 18px · Title 24px · Body 20px · CTA 16px

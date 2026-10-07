@@ -7,7 +7,8 @@ from fastapi import HTTPException
 from sqlalchemy import func, update
 from sqlalchemy.orm import Session
 
-from models import AssetTransaction, User, UserRewards
+from models import AssetTransaction, User, UserNotification, UserRewards
+from utils.notification_events import schedule_notification_event
 
 ASSET_KEYS = ("coins", "diamonds", "flowers")
 
@@ -80,16 +81,29 @@ def _mutate(
         if result.rowcount != 1:
             raise HTTPException(status_code=400, detail=insufficient_detail)
         db.refresh(rewards)
-        db.add(
-            AssetTransaction(
-                user_id=user_id,
-                source=source,
-                request_id=request_id,
-                changes=deltas,
-                balances=balances(rewards),
-            )
+        transaction = AssetTransaction(
+            user_id=user_id,
+            source=source,
+            request_id=request_id,
+            changes=deltas,
+            balances=balances(rewards),
         )
+        db.add(transaction)
         db.flush()
+        if debit:
+            db.add(
+                UserNotification(
+                    user_id=user_id,
+                    type="asset_spent",
+                    title="Assets Spent",
+                    message="",
+                    icon="purchase",
+                    source="asset_transaction",
+                    source_event_id=f"asset-transaction:{transaction.id}",
+                    notification_metadata={"changes": deltas, "source": source},
+                )
+            )
+            schedule_notification_event(db, user_id)
     return rewards
 
 

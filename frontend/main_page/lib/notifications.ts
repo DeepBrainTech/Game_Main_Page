@@ -103,6 +103,31 @@ function localizeNotificationContent(
   t: NotificationTranslateFn,
 ): { title: string; message: string; messageParts: NotificationMessageParts | null } {
   const metadata = notification.metadata ?? {};
+  if (notification.type === "asset_spent") {
+    const changes = metadata.changes;
+    const parts: string[] = [];
+    if (changes && typeof changes === "object") {
+      const amounts = changes as Record<string, unknown>;
+      for (const asset of ["coins", "diamonds", "flowers"] as const) {
+        const amount = Math.abs(Number(amounts[asset] ?? 0));
+        if (Number.isFinite(amount) && amount > 0) {
+          parts.push(t(`events.assetSpent.${asset}`, { count: amount }));
+        }
+      }
+    }
+    const rawSource = typeof metadata.source === "string" ? metadata.source : "";
+    const source = rawSource
+      .replace(/:/g, " · ")
+      .replace(/[-_]/g, " ");
+    return {
+      title: t("events.assetSpent.title"),
+      message: t("events.assetSpent.message", {
+        assets: parts.join(t("events.assetSpent.separator")),
+        source,
+      }),
+      messageParts: null,
+    };
+  }
   const diamonds =
     typeof metadata.diamonds === "number"
       ? metadata.diamonds

@@ -12,12 +12,13 @@ export interface UserNotificationData {
   metadata: Record<string, unknown>;
 }
 
-export async function fetchNotifications(limit = 20): Promise<{
+export async function fetchNotifications(limit = 20, beforeId?: number): Promise<{
   notifications: UserNotificationData[];
   unread_count: number;
 }> {
   const safeLimit = Math.max(1, Math.min(100, limit));
-  const res = await credentialedFetch(getApiUrl(`/api/notifications?limit=${safeLimit}`), {
+  const cursor = beforeId ? `&before_id=${encodeURIComponent(String(beforeId))}` : "";
+  const res = await credentialedFetch(getApiUrl(`/api/notifications?limit=${safeLimit}${cursor}`), {
     headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("fetch_notifications_failed");
@@ -26,6 +27,20 @@ export async function fetchNotifications(limit = 20): Promise<{
     notifications: (json?.data?.notifications ?? []) as UserNotificationData[],
     unread_count: Number(json?.data?.unread_count ?? 0),
   };
+}
+
+export function subscribeToNotificationEvents(
+  onNotification: () => void,
+  onConnectionChange: (connected: boolean) => void,
+): EventSource | null {
+  if (typeof EventSource === "undefined") return null;
+  const source = new EventSource(getApiUrl("/api/notifications/events"), {
+    withCredentials: true,
+  });
+  source.addEventListener("notification", onNotification);
+  source.onopen = () => onConnectionChange(true);
+  source.onerror = () => onConnectionChange(false);
+  return source;
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
