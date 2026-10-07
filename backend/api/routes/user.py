@@ -50,6 +50,7 @@ from schemas import (
 from auth import get_current_active_user
 from config.shop_items import SHOP_ITEMS, get_shop_items_by_game, is_item_available_for_game
 from config.home_system import HOME_SYSTEM_ITEMS, get_home_system_item, is_free_home_system_item
+from utils.home_system_entitlements import membership_cosmetic_item_ids, sanitize_cosmetic_loadout
 from config.learning_commerce import MENTAL_MATH_COURSE_KEY, get_learning_bundle_commerce
 from config.learning_media import get_making_whole_question_video_key
 from utils.r2_storage import generate_object_read_url
@@ -1411,6 +1412,7 @@ async def get_home_system(
     owned_item_ids.update(
         item_id for item_id, item in HOME_SYSTEM_ITEMS.items() if is_free_home_system_item(item)
     )
+    membership_item_ids = membership_cosmetic_item_ids(current_user)
 
     loadout_row = (
         db.query(UserHomeSystemLoadout)
@@ -1424,11 +1426,19 @@ async def get_home_system(
         "background": loadout_row.background_item_id if loadout_row else None,
         "limited": loadout_row.limited_item_id if loadout_row else None,
     }
+    valid_loadout = sanitize_cosmetic_loadout(loadout, owned_item_ids, membership_item_ids)
+    if loadout_row and valid_loadout != loadout:
+        for slot, item_id in valid_loadout.items():
+            setattr(loadout_row, f"{slot}_item_id", item_id)
+        db.commit()
+    loadout = valid_loadout
     items = [
         {
             "item_id": item_id,
             **item,
             "is_owned": item_id in owned_item_ids,
+            "membership_access": item_id in membership_item_ids,
+            "membership_eligible": item["tier"] == "limited",
         }
         for item_id, item in HOME_SYSTEM_ITEMS.items()
     ]
@@ -1439,6 +1449,12 @@ async def get_home_system(
         data={
             "items": items,
             "owned_item_ids": sorted(owned_item_ids),
+            "membership_expires_at": (
+                current_user.membership_expires_at.isoformat() + (
+                    "Z" if current_user.membership_expires_at.tzinfo is None else ""
+                )
+                if membership_item_ids and current_user.membership_expires_at else None
+            ),
             "loadout": loadout,
         },
     )
@@ -1449,6 +1465,19 @@ def _home_system_loadout_dict(loadout: UserHomeSystemLoadout) -> dict:
         slot: getattr(loadout, f"{slot}_item_id")
         for slot in ("head", "body", "hand", "background", "limited")
     }
+
+
+def _sanitize_home_system_loadout(db: Session, user: User, loadout: UserHomeSystemLoadout):
+    # Include pending purchases before validating equipped items.
+    db.flush()
+    owned_ids = {row[0] for row in db.query(UserHomeSystemInventory.item_id).filter(
+        UserHomeSystemInventory.user_id == user.id
+    ).all()}
+    valid_loadout = sanitize_cosmetic_loadout(
+        _home_system_loadout_dict(loadout), owned_ids, membership_cosmetic_item_ids(user)
+    )
+    for slot, item_id in valid_loadout.items():
+        setattr(loadout, f"{slot}_item_id", item_id)
 
 
 def _set_home_system_loadout_item(db: Session, user_id: int, slot: str, item_id: str | None):
@@ -1506,6 +1535,8 @@ async def redeem_home_system_item(
     db.add(UserHomeSystemInventory(user_id=current_user.id, item_id=item_id))
     db.add(rewards)
     loadout = _set_home_system_loadout_item(db, current_user.id, item["slot"], item_id) if equip else None
+    if loadout is not None:
+        _sanitize_home_system_loadout(db, current_user, loadout)
     db.commit()
     db.refresh(rewards)
 
@@ -1544,10 +1575,11 @@ async def update_home_system_loadout(
             )
             .first()
         )
-        if owned is None:
+        if owned is None and body.item_id not in membership_cosmetic_item_ids(current_user):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="item_not_owned")
 
     loadout = _set_home_system_loadout_item(db, current_user.id, body.slot, body.item_id)
+    _sanitize_home_system_loadout(db, current_user, loadout)
     db.commit()
     db.refresh(loadout)
 

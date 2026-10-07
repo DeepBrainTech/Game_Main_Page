@@ -24,7 +24,7 @@ export default function HomeSystemItemCard({
 }: HomeSystemItemCardProps) {
   const tHome = useTranslations("dashboard");
   const itemName = tHome(`homesteadItems.${item.item_id}`);
-  const insufficient = !owned && !affordable;
+  const insufficient = !owned && !item.membership_access && !affordable;
   const actionLabel = busy
     ? tHome("homesteadSaving")
     : insufficient
@@ -85,6 +85,8 @@ export default function HomeSystemItemCard({
           <span className="text-xs">{tHome("homesteadSaving")}</span>
         ) : owned ? (
           <span>{tHome(equipped ? "homesteadEquipped" : "homesteadOwned")}</span>
+        ) : item.membership_access ? (
+          <span className="text-xs">{tHome(equipped ? "homesteadEquipped" : "homesteadPurchase.membershipIncluded")}</span>
         ) : (
           <>
             {priceIcon ? <img src={priceIcon} alt="" className="shrink-0" /> : null}

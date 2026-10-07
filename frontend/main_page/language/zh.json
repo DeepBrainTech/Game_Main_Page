@@ -428,7 +428,12 @@
       "getCoins": "获取金币",
       "getDiamonds": "获取钻石",
       "close": "关闭购买预览",
-      "preview": "Wukoo 穿戴{item}的效果"
+      "preview": "Wukoo 穿戴{item}的效果",
+      "buyPermanently": "永久购买",
+      "memberBenefit": "<plus>PLUS</plus> / <premium>PREMIUM</premium> 会员免费使用",
+      "membershipIncluded": "会员权益",
+      "equipForFree": "免费装备",
+      "upgrade": "升级至 <plus>PLUS</plus> / <premium>PREMIUM</premium>"
     },
     "homesteadEquipped": "已装备",
     "homesteadOwned": "已拥有",

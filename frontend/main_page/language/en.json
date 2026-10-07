@@ -429,7 +429,12 @@
       "getCoins": "Get Coins",
       "getDiamonds": "Get Diamonds",
       "close": "Close purchase preview",
-      "preview": "Wukoo wearing {item}"
+      "preview": "Wukoo wearing {item}",
+      "buyPermanently": "Buy permanently",
+      "memberBenefit": "Free with <plus>PLUS</plus> / <premium>PREMIUM</premium>",
+      "membershipIncluded": "Member benefit",
+      "equipForFree": "Equip for free",
+      "upgrade": "Upgrade to <plus>PLUS</plus> / <premium>PREMIUM</premium>"
     },
     "homesteadEquipped": "Equipped",
     "homesteadOwned": "Owned",

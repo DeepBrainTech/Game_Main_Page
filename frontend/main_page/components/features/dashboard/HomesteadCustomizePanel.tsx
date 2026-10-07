@@ -27,7 +27,7 @@ interface HomesteadCustomizePanelProps {
   error: string | null;
   loading: boolean;
   onRedeem: (itemId: string) => Promise<boolean>;
-  onEquip: (slot: HomeSystemSlot, itemId: string | null) => Promise<void>;
+  onEquip: (slot: HomeSystemSlot, itemId: string | null) => Promise<boolean>;
 }
 
 function getErrorMessage(tHome: ReturnType<typeof useTranslations>, error: string | null) {
@@ -62,13 +62,14 @@ export default function HomesteadCustomizePanel({
   const listRef = useRef<HTMLDivElement | null>(null);
   const equippedItemId = loadout[slot];
   const isItemOwned = (item: HomeSystemItem) =>
-    equippedItemId === item.item_id || ownedItemIds.has(item.item_id) || item.is_owned === true || item.is_free === true;
+    ownedItemIds.has(item.item_id) || item.is_owned === true || item.is_free === true;
   const slotItems = items.filter((item) => item.slot === slot).sort((a, b) =>
     Number(isItemOwned(b)) - Number(isItemOwned(a)) || HOME_SYSTEM_TIER_ORDER[a.tier] - HOME_SYSTEM_TIER_ORDER[b.tier]
   );
   useContainedWheelScroll(listRef, expanded && !loading && slotItems.length > 0);
   const { rowRef, visibleCount, capacity, cardWidth } = useSingleRowCapacity(loading ? 4 : slotItems.length);
   const hasMoreItems = (loading ? 4 : slotItems.length) > visibleCount;
+  const hasMultipleRows = (loading ? 4 : slotItems.length) > capacity;
   const visibleItems = expanded ? slotItems : slotItems.slice(0, visibleCount + Number(hasMoreItems));
   const setListRef = useCallback((node: HTMLDivElement | null) => {
     listRef.current = node;
@@ -80,7 +81,7 @@ export default function HomesteadCustomizePanel({
     coins >= item.cost.coins && diamonds >= item.cost.diamonds;
   const listClassName = `grid gap-[var(--item-gap)] px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
     expanded
-      ? "grid-cols-[repeat(var(--item-columns),var(--item-width))] max-h-[calc(2*var(--item-height)+var(--item-gap)+0.5rem)] overflow-x-hidden overflow-y-auto"
+      ? `grid-cols-[repeat(var(--item-columns),var(--item-width))] ${hasMultipleRows ? "justify-between" : "justify-start"} max-h-[calc(2*var(--item-height)+var(--item-gap)+0.5rem)] overflow-x-hidden overflow-y-auto`
       : "grid-flow-col auto-cols-[var(--item-width)] justify-start overflow-hidden"
   }`;
 
@@ -168,12 +169,24 @@ export default function HomesteadCustomizePanel({
       ) : null}
       {purchaseItem ? (
         <HomeSystemPurchaseModal
-          item={purchaseItem}
+          item={items.find((item) => item.item_id === purchaseItem.item_id) ?? purchaseItem}
           loadout={loadout}
           coins={coins}
           diamonds={diamonds}
           busy={confirming || busyItemId !== null}
           error={errorMessage}
+          equipped={equippedItemId === purchaseItem.item_id}
+          onEquip={async () => {
+            if (confirmingRef.current) return;
+            confirmingRef.current = true;
+            setConfirming(true);
+            try {
+              if (await onEquip(purchaseItem.slot, equippedItemId === purchaseItem.item_id ? null : purchaseItem.item_id)) setPurchaseItem(null);
+            } finally {
+              confirmingRef.current = false;
+              setConfirming(false);
+            }
+          }}
           onClose={() => { if (!confirmingRef.current) setPurchaseItem(null); }}
           onConfirm={async () => {
             if (confirmingRef.current || !canAfford(purchaseItem)) return;

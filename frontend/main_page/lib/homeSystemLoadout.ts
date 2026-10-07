@@ -14,7 +14,7 @@ export function getHomeSystemPreviewLoadout(loadout: HomeSystemLoadout, item: Ho
   return preview;
 }
 
-export function getHomeSystemAvatarPreviewFrame(loadout: HomeSystemLoadout) {
+export function getHomeSystemAvatarPreviewFrame(loadout: HomeSystemLoadout, paddingRatio = 0.25) {
   const limited = loadout.limited ? getHomeSystemPreviewFrame(loadout.limited) : null;
   const bounds = limited ? [limited.bounds] : [
     HOME_SYSTEM_BASE_ARTWORK_BOUNDS,
@@ -30,7 +30,7 @@ export function getHomeSystemAvatarPreviewFrame(loadout: HomeSystemLoadout) {
   const centerX = anchor[0] + anchor[2] / 2;
   const width = Math.max(centerX - left, right - centerX) * 2;
   const height = Math.max(...bounds.map(([, y, , h]) => y + h)) - top;
-  const padding = Math.max(right - left, height) * 0.25;
+  const padding = Math.max(right - left, height) * paddingRatio;
   return {
     canvas: limited?.canvas ?? HOME_SYSTEM_ARTBOARD,
     bounds: [centerX - width / 2 - padding, top - padding, width + padding * 2, height + padding * 2] as const,

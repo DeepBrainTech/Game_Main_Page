@@ -16,8 +16,8 @@ export function useHomeSystem() {
   const [error, setError] = useState<string | null>(null);
   const loadedRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setError(null);
+  const load = useCallback(async (clearError = true) => {
+    if (clearError) setError(null);
     if (!loadedRef.current) setLoading(true);
     try {
       const next = await fetchHomeSystem();
@@ -33,6 +33,45 @@ export function useHomeSystem() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const refreshOnReturn = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    window.addEventListener("focus", refreshOnReturn);
+    document.addEventListener("visibilitychange", refreshOnReturn);
+    return () => {
+      window.removeEventListener("focus", refreshOnReturn);
+      document.removeEventListener("visibilitychange", refreshOnReturn);
+    };
+  }, [load]);
+
+  useEffect(() => {
+    if (!data?.membership_expires_at) return;
+    const expiresAt = Date.parse(data.membership_expires_at);
+    if (!Number.isFinite(expiresAt)) return;
+    const remaining = expiresAt - Date.now();
+    if (remaining <= 0) {
+      setData((current) => {
+        if (!current) return current;
+        const owned = new Set(current.owned_item_ids);
+        return {
+          ...current,
+          membership_expires_at: null,
+          items: current.items.map((item) => ({ ...item, membership_access: false })),
+          loadout: Object.fromEntries(Object.entries(current.loadout).map(([slot, id]) =>
+            [slot, id && !owned.has(id) ? null : id]
+          )) as HomeSystemLoadout,
+        };
+      });
+      void load();
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setData((current) => current ? { ...current } : current);
+    }, Math.min(remaining + 50, 2_147_483_647));
+    return () => window.clearTimeout(timer);
+  }, [data, load]);
 
   const redeem = useCallback(async (itemId: string) => {
     setBusyItemId(itemId);
@@ -66,13 +105,16 @@ export function useHomeSystem() {
     try {
       const loadout = await updateHomeSystemLoadout(slot, itemId);
       setData((current) => (current ? { ...current, loadout } : current));
+      return true;
     } catch (e) {
       const message = e instanceof Error ? e.message : "update_home_system_loadout_failed";
       setError(message);
+      void load(false);
+      return false;
     } finally {
       setBusyItemId(null);
     }
-  }, []);
+  }, [load]);
 
   const loadout: HomeSystemLoadout = data?.loadout ?? {
     head: null,

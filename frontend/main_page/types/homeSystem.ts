@@ -15,6 +15,8 @@ export interface HomeSystemItem {
   cost: HomeSystemCost;
   is_free?: boolean;
   is_owned?: boolean;
+  membership_access?: boolean;
+  membership_eligible?: boolean;
 }
 
 export interface HomeSystemLoadout {
@@ -28,5 +30,6 @@ export interface HomeSystemLoadout {
 export interface HomeSystemData {
   items: HomeSystemItem[];
   owned_item_ids: string[];
+  membership_expires_at?: string | null;
   loadout: HomeSystemLoadout;
 }
