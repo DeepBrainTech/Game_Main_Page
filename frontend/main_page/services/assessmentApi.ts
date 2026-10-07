@@ -142,19 +142,10 @@ export async function fetchAssessmentTrend(subject = "mental-math", limit = 20):
     subject,
     limit: String(safeLimit),
   });
-  const headers = getAuthHeaders();
-  const primary = await credentialedFetch(getApiUrl(`/api/user/assessment-trend?${params.toString()}`), {
-    headers,
+  const response = await credentialedFetch(getApiUrl(`/api/user/assessments/history/trend?${params.toString()}`), {
+    headers: getAuthHeaders(),
   });
-  if (primary.ok) {
-    const json = await primary.json();
-    return (json?.data?.points ?? []) as AssessmentTrendPoint[];
-  }
-
-  const fallback = await credentialedFetch(getApiUrl(`/api/user/assessments/history/trend?${params.toString()}`), {
-    headers,
-  });
-  if (!fallback.ok) throw new Error("fetch_assessment_trend_failed");
-  const json = await fallback.json();
+  if (!response.ok) throw new Error("fetch_assessment_trend_failed");
+  const json = await response.json();
   return (json?.data?.points ?? []) as AssessmentTrendPoint[];
 }

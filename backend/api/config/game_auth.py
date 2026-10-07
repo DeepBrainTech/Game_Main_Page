@@ -1,4 +1,5 @@
 """Per-game JWT issuance config and helpers for embedded game clients."""
+
 from __future__ import annotations
 
 import os
@@ -77,18 +78,33 @@ def _default_secret(entry: GameAuthEntry) -> str:
 
 def _jwt_settings(entry: GameAuthEntry) -> tuple[str, str, str, str, int]:
     prefix = entry.env_prefix
-    secret = os.getenv(f"{prefix}_JWT_SECRET", _default_secret(entry))
+    secret = os.getenv(f"{prefix}_JWT_SECRET", "").strip()
     alg = os.getenv(f"{prefix}_JWT_ALG", "HS256")
     aud = os.getenv(f"{prefix}_JWT_AUD", entry.default_aud)
     iss = os.getenv(f"{prefix}_JWT_ISS", "main-portal")
     expire = int(os.getenv(f"{prefix}_TOKEN_EXPIRE_SECONDS", "300"))
+    if not secret or secret in {
+        _default_secret(entry),
+        f"change-this-{entry.game_key}-secret",
+    }:
+        raise ValueError("game_signing_not_configured")
+    if expire <= 0:
+        raise ValueError("invalid_game_token_expiry")
     return secret, alg, aud, iss, expire
+
+
+def validate_game_signing(game_key: str) -> None:
+    entry = get_game_auth_entry_by_game_key(game_key)
+    if entry is None:
+        raise ValueError("unknown_game")
+    _jwt_settings(entry)
 
 
 def create_game_token(
     game_key: str,
     claims: Dict[str, Any],
     expires_seconds: Optional[int] = None,
+    expires_at: Optional[datetime] = None,
 ) -> Tuple[str, int]:
     """Create a short-lived JWT for an embedded game client."""
     entry = get_game_auth_entry_by_game_key(game_key)
@@ -97,7 +113,7 @@ def create_game_token(
 
     secret, alg, aud, iss, default_expire = _jwt_settings(entry)
     expire_sec = expires_seconds if expires_seconds is not None else default_expire
-    expire = datetime.utcnow() + timedelta(seconds=expire_sec)
+    expire = expires_at or (datetime.utcnow() + timedelta(seconds=expire_sec))
 
     to_encode = claims.copy()
     to_encode.update({"exp": expire, "iss": iss, "aud": aud})

@@ -36,12 +36,6 @@ SHOP_ITEMS: dict[str, dict[str, Any]] = {
         "games": ["chessmater"],
         "cost": {"coins": 5, "diamonds": 0, "flowers": 0},
     },
-    "chess_mater_reply": {
-        "name": "Chess Mater Reply",
-        "games": ["chessmater"],
-        "cost": {"coins": 0, "diamonds": 2, "flowers": 0},
-    },
-
     "learning_mental_math_making_whole": {
         "name": "learning_mental_math_making_whole",
         "games": ["learning-mental-math"],

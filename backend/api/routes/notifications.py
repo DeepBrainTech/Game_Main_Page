@@ -1,28 +1,15 @@
-from datetime import datetime
+"""HTTP endpoints for notifications."""
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from auth import get_current_active_user
 from database import get_db
-from models import User, UserNotification
+from models import User
 from schemas import APIResponse
+from services import notifications
 
 router = APIRouter(prefix="/api/notifications", tags=["notifications"])
-
-
-def _notification_payload(row: UserNotification) -> dict:
-    return {
-        "id": row.id,
-        "type": row.type,
-        "title": row.title,
-        "message": row.message,
-        "icon": row.icon,
-        "is_read": bool(row.is_read),
-        "created_at": row.created_at.isoformat() if row.created_at else None,
-        "read_at": row.read_at.isoformat() if row.read_at else None,
-        "metadata": row.notification_metadata or {},
-    }
 
 
 @router.get("", response_model=APIResponse)
@@ -31,25 +18,8 @@ async def list_notifications(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    rows = (
-        db.query(UserNotification)
-        .filter(UserNotification.user_id == current_user.id)
-        .order_by(UserNotification.created_at.desc(), UserNotification.id.desc())
-        .limit(limit)
-        .all()
-    )
-    unread_count = (
-        db.query(UserNotification)
-        .filter(UserNotification.user_id == current_user.id, UserNotification.is_read == False)
-        .count()
-    )
-    return APIResponse(
-        success=True,
-        message="ok",
-        data={
-            "notifications": [_notification_payload(row) for row in rows],
-            "unread_count": unread_count,
-        },
+    return await notifications.list_notifications(
+        limit=limit, current_user=current_user, db=db
     )
 
 
@@ -58,20 +28,9 @@ async def mark_all_notifications_read(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    now = datetime.utcnow()
-    (
-        db.query(UserNotification)
-        .filter(UserNotification.user_id == current_user.id, UserNotification.is_read == False)
-        .update(
-            {
-                UserNotification.is_read: True,
-                UserNotification.read_at: now,
-            },
-            synchronize_session=False,
-        )
+    return await notifications.mark_all_notifications_read(
+        current_user=current_user, db=db
     )
-    db.commit()
-    return APIResponse(success=True, message="ok", data={"read_at": now.isoformat()})
 
 
 @router.patch("/{notification_id}/read", response_model=APIResponse)
@@ -80,19 +39,6 @@ async def mark_notification_read(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    now = datetime.utcnow()
-    row = (
-        db.query(UserNotification)
-        .filter(
-            UserNotification.id == notification_id,
-            UserNotification.user_id == current_user.id,
-        )
-        .first()
+    return await notifications.mark_notification_read(
+        notification_id=notification_id, current_user=current_user, db=db
     )
-    if row is None:
-      return APIResponse(success=True, message="ok", data={})
-    row.is_read = True
-    row.read_at = now
-    db.add(row)
-    db.commit()
-    return APIResponse(success=True, message="ok", data={"read_at": now.isoformat()})

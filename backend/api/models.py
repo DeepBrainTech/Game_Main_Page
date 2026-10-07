@@ -489,3 +489,44 @@ class UserLearningPracticeReportAnswer(Base):
     time_spent_ms = Column(Integer, default=0, nullable=False)
     sort_order = Column(Integer, default=0, nullable=False)
     report = relationship("UserLearningPracticeReport", back_populates="answers")
+
+
+class AssetTransaction(Base):
+    """Audit trail committed atomically with balance changes and fulfillment."""
+    __tablename__ = "asset_transactions"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    source = Column(String(100), nullable=False)
+    request_id = Column(String(255), nullable=True, index=True)
+    changes = Column(JSON, nullable=False)
+    balances = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class CommerceOperation(Base):
+    """Replayable inventory mutations scoped to an account and request UUID."""
+    __tablename__ = "commerce_operations"
+    __table_args__ = (UniqueConstraint("user_id", "request_id", name="uq_commerce_operation_request"),)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    request_id = Column(String(36), nullable=False)
+    operation = Column(String(100), nullable=False)
+    payload = Column(JSON, nullable=False)
+    result = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class GamePurchase(Base):
+    """Idempotent game-specific grants bought with portal assets."""
+    __tablename__ = "game_purchases"
+    __table_args__ = (UniqueConstraint("user_id", "request_id", name="uq_game_purchase_request"),)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    request_id = Column(String(36), nullable=False)
+    game_key = Column(String(100), nullable=False)
+    product_id = Column(String(100), nullable=False)
+    purpose = Column(String(100), nullable=False)
+    target = Column(String(256), nullable=False)
+    cost = Column(JSON, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

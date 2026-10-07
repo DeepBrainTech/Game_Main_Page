@@ -17,6 +17,7 @@ def create_user_notification(
     source: str | None = None,
     source_event_id: str | None = None,
     metadata: dict[str, Any] | None = None,
+    commit: bool = True,
 ) -> UserNotification | None:
     """Create a notification once; Stripe may retry webhooks with the same event id."""
     if source_event_id:
