@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import type { NotificationItem } from "@/lib/notifications";
 import NotificationMessage from "@/components/layout/NotificationMessage";
+import { useScrollActivity } from "@/hooks/useScrollActivity";
+import styles from "@/components/ui/ScrollArea.module.css";
 
 interface NotificationPanelProps {
   open: boolean;
@@ -36,6 +38,7 @@ export default function NotificationPanel({
   onScroll,
 }: NotificationPanelProps) {
   const t = useTranslations("notifications");
+  const { isScrolling, handleScroll } = useScrollActivity(open);
 
   if (!open || !panelPosition) {
     return null;
@@ -74,19 +77,21 @@ export default function NotificationPanel({
         <div className="relative">
           <div
             ref={scrollRef}
-            className={`overscroll-contain px-3 py-3 ${
+            className={`${styles.scrollArea} overscroll-contain px-3 py-3 ${
               listNeedsScroll ? "overflow-y-auto" : "overflow-y-visible"
             }`}
             style={
               listScrollMaxHeight !== null
                 ? {
                     maxHeight: `min(${listScrollMaxHeight}px, 60vh)`,
-                    scrollbarWidth: "thin",
-                    scrollbarColor: "#7A7A7A #E8E8E8",
                   }
                 : undefined
             }
-            onScroll={onScroll}
+            data-scrolling={isScrolling}
+            onScroll={() => {
+              handleScroll();
+              onScroll();
+            }}
           >
             <div ref={listRef} className="space-y-3">
               {loading ? (

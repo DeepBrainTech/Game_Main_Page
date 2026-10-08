@@ -1,0 +1,53 @@
+@property --app-scrollbar-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.scrollArea {
+  --app-scrollbar-opacity: 0;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  scrollbar-color: rgb(122 122 122 / var(--app-scrollbar-opacity))
+    rgb(232 232 232 / var(--app-scrollbar-opacity));
+  transition: --app-scrollbar-opacity 350ms ease-out;
+}
+
+.scrollArea[data-scrolling="true"] {
+  --app-scrollbar-opacity: 1;
+}
+
+.scrollArea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.scrollArea::-webkit-scrollbar-button {
+  display: none;
+}
+
+.scrollArea::-webkit-scrollbar-track,
+.scrollArea::-webkit-scrollbar-thumb {
+  border-radius: 100px;
+}
+
+.scrollArea::-webkit-scrollbar-track {
+  background-color: rgb(232 232 232 / var(--app-scrollbar-opacity));
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  background-color: rgb(122 122 122 / var(--app-scrollbar-opacity));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollArea {
+    transition: none;
+  }
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .scrollArea,
+  .scrollArea[data-scrolling="true"] {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+}

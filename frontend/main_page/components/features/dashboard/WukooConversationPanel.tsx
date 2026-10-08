@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef } from "react";
 import { useTypewriterText } from "@/hooks/useTypewriterText";
+import { useScrollActivity } from "@/hooks/useScrollActivity";
+import scrollStyles from "@/components/ui/ScrollArea.module.css";
 import type { MonkeyChatMessage } from "@/services/monkeyChatApi";
 
 interface WukooConversationPanelProps {
@@ -22,6 +24,7 @@ export default function WukooConversationPanel({
   onLatestAssistantAnimationComplete,
   onClose,
 }: WukooConversationPanelProps) {
+  const { isScrolling, handleScroll } = useScrollActivity(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollFrameRef = useRef<number | null>(null);
@@ -81,7 +84,9 @@ export default function WukooConversationPanel({
 
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-[clamp(0.75rem,2.4vw,1rem)] pb-[clamp(1.75rem,5vw,2.5rem)] pr-[clamp(1rem,3vw,1.4rem)] pt-[clamp(2.75rem,8vw,3.5rem)] scrollbar-thin"
+        className={`${scrollStyles.scrollArea} min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-[clamp(0.75rem,2.4vw,1rem)] pb-[clamp(1.75rem,5vw,2.5rem)] pr-[clamp(1rem,3vw,1.4rem)] pt-[clamp(2.75rem,8vw,3.5rem)]`}
+        data-scrolling={isScrolling}
+        onScroll={handleScroll}
       >
         <div className="flex flex-col gap-[clamp(0.75rem,2vw,1rem)]">
           {messages.map((message, index) => {
