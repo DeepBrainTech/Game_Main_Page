@@ -70,7 +70,6 @@ export default function HomesteadCustomizePanel({
   const { rowRef, visibleCount, capacity, cardWidth } = useSingleRowCapacity(loading ? 4 : slotItems.length);
   const hasMoreItems = (loading ? 4 : slotItems.length) > visibleCount;
   const hasMultipleRows = (loading ? 4 : slotItems.length) > capacity;
-  const visibleItems = expanded ? slotItems : slotItems.slice(0, visibleCount + Number(hasMoreItems));
   const setListRef = useCallback((node: HTMLDivElement | null) => {
     listRef.current = node;
     rowRef(node);
@@ -82,7 +81,7 @@ export default function HomesteadCustomizePanel({
   const listClassName = `grid gap-[var(--item-gap)] px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
     expanded
       ? `grid-cols-[repeat(var(--item-columns),var(--item-width))] ${hasMultipleRows ? "justify-between" : "justify-start"} max-h-[calc(2*var(--item-height)+var(--item-gap)+0.5rem)] overflow-x-hidden overflow-y-auto`
-      : "grid-flow-col auto-cols-[var(--item-width)] justify-start overflow-hidden"
+      : "grid-flow-col auto-cols-[var(--item-width)] justify-start overflow-x-auto overflow-y-hidden overscroll-x-contain"
   }`;
 
   return (
@@ -118,7 +117,7 @@ export default function HomesteadCustomizePanel({
           aria-label={tHome(`homesteadSlots.${slot}`)}
           tabIndex={0}
         >
-          {visibleItems.map((item, index) => {
+          {slotItems.map((item) => {
             const isEquipped = equippedItemId === item.item_id;
             const isOwned = isItemOwned(item);
 
@@ -131,7 +130,6 @@ export default function HomesteadCustomizePanel({
                 affordable={canAfford(item)}
                 busy={busyItemId === item.item_id}
                 pending={busyItemId !== null}
-                previewOnly={!expanded && index === visibleCount}
                 onSelect={() => {
                   if (isOwned) {
                     void onEquip(item.slot, isEquipped ? null : item.item_id);

@@ -42,6 +42,8 @@
     "notifications": "Notifications"
   },
   "notifications": {
+    "dismissToast": "Dismiss notification",
+    "openToast": "Open notification: {title}",
     "title": "Notifications",
     "markAllRead": "Mark all as read",
     "loading": "Loading notifications...",
@@ -487,7 +489,6 @@
       "background-beach": "Beach",
       "background-fireworks": "Fireworks Background",
       "background-cloudy": "Cloudy Background",
-      "background-chessmater": "ChessMater Background",
       "background-green-free": "Green Background",
       "background-red-free": "Red Background",
       "background-blue-free": "Blue Background",

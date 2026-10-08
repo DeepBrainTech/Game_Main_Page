@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useNotificationToasts } from "@/hooks/useNotificationToasts";
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -22,6 +23,7 @@ import {
 export function useNotifications(activeTab: string | null) {
   const tNotifications = useTranslations("notifications");
   const [open, setOpen] = useState(false);
+  const { toasts, observeNotifications, dismissToast } = useNotificationToasts(open);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -58,11 +60,12 @@ export function useNotifications(activeTab: string | null) {
     if (showLoading) setLoading(true);
     try {
       const { notifications: rows, unread_count } = await fetchNotifications();
+      const mappedRows = rows.map(mapRow);
+      observeNotifications(mappedRows);
       setUnreadCount(unread_count);
       setNotifications((current) => {
         const currentById = new Map(current.map((item) => [item.id, item] as const));
-        const latest = rows.map((row) => {
-          const mapped = mapRow(row);
+        const latest = mappedRows.map((mapped) => {
           const existing = currentById.get(mapped.id);
           return existing && !existing.unread
             ? { ...mapped, unread: false }
@@ -86,7 +89,7 @@ export function useNotifications(activeTab: string | null) {
         void refresh();
       }
     }
-  }, [mapRow]);
+  }, [mapRow, observeNotifications]);
 
   const loadMoreNotifications = useCallback(async () => {
     if (!hasMoreRef.current || loadingMoreRef.current || cursorRef.current === null) return;
@@ -285,6 +288,8 @@ export function useNotifications(activeTab: string | null) {
   }, [open]);
 
   return {
+    toasts,
+    dismissToast,
     open,
     setOpen,
     notifications,

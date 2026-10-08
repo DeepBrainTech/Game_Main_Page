@@ -275,6 +275,8 @@ export function mapNotification(
 }
 
 export const NOTIFICATION_VISIBLE_LIMIT = 4;
+export const NOTIFICATION_TOAST_DURATION_MS = 6_000;
+export const NOTIFICATION_TOAST_VISIBLE_LIMIT = 4;
 export const NOTIFICATION_LIST_GAP_PX = 12;
 export const NOTIFICATION_LIST_PADDING_Y_PX = 24;
 export const NOTIFICATION_FALLBACK_ITEM_HEIGHT_PX = 104;

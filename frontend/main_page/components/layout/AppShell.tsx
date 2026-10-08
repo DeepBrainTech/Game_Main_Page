@@ -6,6 +6,7 @@ import ProfileDialog from "@/components/features/profile/ProfileDialog";
 import SettingsDialog from "@/components/features/settings/SettingsDialog";
 import AppHeader from "@/components/layout/AppHeader";
 import AppSidebar from "@/components/layout/AppSidebar";
+import NotificationToastStack from "@/components/layout/NotificationToastStack";
 import { useRewards } from "@/hooks/useRewards";
 import { useNotifications } from "@/hooks/useNotifications";
 import { fetchAuthMeMembership } from "@/services/authApi";
@@ -116,6 +117,20 @@ export default function AppShell({
       </div>
 
       <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      <NotificationToastStack
+        notifications={notifications.toasts}
+        bellRef={notifications.bellRef}
+        onDismiss={notifications.dismissToast}
+        onOpen={(id) => {
+          notifications.markAsRead(id);
+          notifications.dismissToast(id);
+          setProfileOpen(false);
+          setSettingsOpen(false);
+          notifications.setOpen(true);
+          notifications.bellRef.current?.focus();
+        }}
+      />
 
       <ProfileDialog
         open={profileOpen}

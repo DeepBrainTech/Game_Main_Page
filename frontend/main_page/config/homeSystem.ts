@@ -98,7 +98,6 @@ const itemVisuals: Record<string, HomeSystemItemVisual> = {
   "background-green-free": backgroundVisual("green_background"),
   "background-red-free": backgroundVisual("red_background"),
   "background-blue-free": backgroundVisual("blue_background"),
-  "background-chessmater": backgroundVisual("chessmater_bg"),
   "limited-jindouyun-monkey": { primary: asset("limited-1.svg") },
 };
 

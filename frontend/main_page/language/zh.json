@@ -42,6 +42,8 @@
     "notifications": "通知"
   },
   "notifications": {
+    "dismissToast": "关闭通知提示",
+    "openToast": "查看通知：{title}",
     "title": "通知",
     "markAllRead": "全部标为已读",
     "loading": "正在加载通知...",
@@ -486,7 +488,6 @@
       "background-beach": "海滩背景",
       "background-fireworks": "烟花背景",
       "background-cloudy": "云朵背景",
-      "background-chessmater": "棋艺大师背景",
       "background-green-free": "绿色背景",
       "background-red-free": "红色背景",
       "background-blue-free": "蓝色背景",

@@ -1,0 +1,58 @@
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast {
+  animation: enter 180ms ease-out;
+}
+
+.toastSlot {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows var(--toast-exit-duration) ease-in-out,
+    opacity var(--toast-exit-duration) ease-in,
+    transform var(--toast-exit-duration) ease-in;
+}
+
+.toastSlot[data-exiting="true"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-0.35rem);
+  pointer-events: none;
+}
+
+.toastSlot[data-exiting="true"] .toast {
+  pointer-events: none;
+}
+
+.toastClip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.toastSpacing {
+  padding: 0.375rem 0.5rem 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
+  .toastSlot {
+    transition: none;
+  }
+
+  .toastSlot[data-exiting="true"] {
+    transform: none;
+  }
+}

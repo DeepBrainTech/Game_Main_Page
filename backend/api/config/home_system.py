@@ -132,12 +132,6 @@ HOME_SYSTEM_ITEMS: dict[str, dict[str, Any]] = {
         "tier": "rare",
         "cost": {"coins": 700, "diamonds": 0, "flowers": 0},
     },
-    "background-chessmater": {
-        "name": "ChessMater Background",
-        "slot": "background",
-        "tier": "premium",
-        "cost": {"coins": 0, "diamonds": 30, "flowers": 0},
-    },
     "background-beach": {
         "name": "Beach",
         "slot": "background",
