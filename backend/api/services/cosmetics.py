@@ -55,7 +55,6 @@ async def get_home_system(current_user: User, db: Session):
     if loadout_row and valid_loadout != loadout:
         for slot, item_id in valid_loadout.items():
             setattr(loadout_row, f"{slot}_item_id", item_id)
-        db.commit()
     loadout = valid_loadout
     items = [
         {
@@ -68,7 +67,7 @@ async def get_home_system(current_user: User, db: Session):
         for item_id, item in HOME_SYSTEM_ITEMS.items()
     ]
 
-    return APIResponse(
+    response = APIResponse(
         success=True,
         message="ok",
         data={
@@ -83,6 +82,9 @@ async def get_home_system(current_user: User, db: Session):
             "loadout": loadout,
         },
     )
+    # Release the account lock before another request enters the event loop.
+    db.commit()
+    return response
 
 
 def _home_system_loadout_dict(loadout: UserHomeSystemLoadout) -> dict:
