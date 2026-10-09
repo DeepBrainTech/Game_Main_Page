@@ -14,6 +14,39 @@ from services.idempotency import replay_operation, save_operation
 OPERATION = "quantumgo:flower-gift"
 
 
+def player_balances(db: Session, user_id: int, token: str) -> dict:
+    entry = get_game_auth_entry_by_game_key("quantumgo")
+    try:
+        secret, algorithm, audience, issuer, _ = _jwt_settings(entry)
+    except ValueError as exc:
+        raise HTTPException(503, "game_signing_not_configured") from exc
+    try:
+        claims = jwt.decode(token, secret, algorithms=[algorithm], audience=audience,
+                            issuer=issuer + ":flower-balances",
+                            options={"require_exp": True, "require_aud": True, "require_iss": True})
+        if (claims.get("purpose") != "flower-balances" or claims.get("game_key") != "quantumgo"
+                or type(claims.get("user_id")) is not int or claims["user_id"] != user_id):
+            raise ValueError("invalid_scope")
+        players = claims["players"]
+        if not isinstance(players, list) or not 1 <= len(players) <= 2:
+            raise ValueError("invalid_players")
+        result = []
+        for player in players:
+            game_id = player["user_id"]
+            if str(UUID(game_id)) != game_id or UUID(game_id).int == 0:
+                raise ValueError("invalid_game_id")
+            portal_id = player.get("portal_user_id")
+            if portal_id is not None and (type(portal_id) is not int or portal_id <= 0):
+                raise ValueError("invalid_account")
+            active = portal_id is not None and db.query(User.id).filter(
+                User.id == portal_id, User.is_active.is_(True)).first() is not None
+            result.append({"user_id": game_id,
+                           "flowers": get_asset_balances(db, portal_id)["flowers"] if active else None})
+        return {"user_id": user_id, "players": result}
+    except (JWTError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise HTTPException(422, "invalid_flower_balance_scope") from exc
+
+
 def verify_intent(token: str, user_id: int) -> dict:
     entry = get_game_auth_entry_by_game_key("quantumgo")
     try:

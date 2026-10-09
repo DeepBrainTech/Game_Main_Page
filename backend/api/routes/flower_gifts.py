@@ -11,13 +11,25 @@ from database import get_db
 from models import User
 from schemas import APIResponse
 from services.assets import get_asset_balances
-from services.flower_gifts import transfer_flowers, transfer_status
+from services.flower_gifts import transfer_flowers, transfer_status, player_balances
 
 router = APIRouter(prefix="/quantumgo/flowers", tags=["Flower Gifts"])
 
 
 class FlowerTransferIn(BaseModel):
     intent_token: str = Field(min_length=1, max_length=8192)
+
+
+class PlayerBalancesIn(BaseModel):
+    balance_token: str = Field(min_length=1, max_length=8192)
+
+
+@router.post("/players/balances", response_model=APIResponse)
+async def players(body: PlayerBalancesIn, response: Response,
+                  current_user: User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
+    return APIResponse(success=True, message="ok",
+                       data=player_balances(db, current_user.id, body.balance_token))
 
 
 @router.get("/balance", response_model=APIResponse)

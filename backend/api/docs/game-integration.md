@@ -208,6 +208,8 @@ QuantumGo 只注册 /ai/review/*，登录只使用 /api/v1/users/verify-token。
 
 主站提供 `GET /api/games/quantumgo/flowers/balance`、`POST /api/games/quantumgo/flowers/transfers` 和 `GET /api/games/quantumgo/flowers/transfers/{request_id}`，均要求主站登录 Cookie，响应禁止缓存。
 
+玩家卡片通过 `POST /api/games/quantumgo/flowers/players/balances` 读取双方鲜花余额，请求为 `{balance_token}`。围棋后端 `/flowers/players` 校验查看者与房间关系后签发 `purpose=flower-balances`、issuer 为原 issuer 加 `:flower-balances` 后缀的 60 秒读取凭证，绑定查看者和最多两位棋手。主站校验当前登录账户，只返回签名范围内的游戏用户 UUID 与鲜花余额；未关联或不可用账号返回 `null`。AI 模式仅授权当前用户自身，不接受前端指定对手 ID，不返回钻石和金币。
+
 转赠请求只有 `intent_token`。该意向由 QuantumGo 后端签发，包含双方主站 ID、游戏用户 UUID、房间 UUID、数量（1/5/10）、请求 UUID 和观众资格；purpose 为 `flower-intent`，issuer 为现有 `QUANTUMGO_JWT_ISS` 加 `:flower-intent` 后缀，有效期 60 秒。主站验证签名、登录账户、用途和参数，按用户 ID 顺序锁住双方账户，复用统一资产服务在同一事务中扣除和增加鲜花，并保存双方资产流水及可重放操作。允许反复互送，禁止自送，不变动钻石和金币。
 
 成功响应包含原始请求信息、赠送者最新资产和 `receipt_token`。到账凭证 purpose 为 `flower-receipt`，使用原有主站 issuer；围棋站只接受该凭证确认到账。重试查询可以重新签发凭证，不重复转账。相同 UUID 修改数量或接收者返回 409。

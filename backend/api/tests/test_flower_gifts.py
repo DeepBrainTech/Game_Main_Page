@@ -14,7 +14,7 @@ from jose import jwt
 with patch.dict(os.environ, {"DATABASE_URL": "sqlite:///flower-test-bootstrap.db"}):
     from models import AssetTransaction, CommerceOperation, User, UserNotification, UserRewards
     from services.assets import get_asset_balances
-    from services.flower_gifts import transfer_flowers, transfer_status, verify_intent
+    from services.flower_gifts import transfer_flowers, transfer_status, verify_intent, player_balances
 
 
 class FlowerGiftTests(unittest.TestCase):
@@ -118,6 +118,34 @@ class FlowerGiftTests(unittest.TestCase):
                 verify_intent(self.token(**changes), 1)
         self.assertEqual(get_asset_balances(self.db, 1)["flowers"], 10)
         self.assertEqual(self.db.query(CommerceOperation).count(), 0)
+
+    def test_scoped_player_balances_only_return_flowers(self):
+        players = [{"user_id": self.claims["sender_game_id"], "portal_user_id": 1},
+                   {"user_id": self.claims["recipient_game_id"], "portal_user_id": 2}]
+        token = self.token(purpose="flower-balances", iss="main-portal:flower-balances", players=players)
+        result = player_balances(self.db, 1, token)
+        self.assertEqual(result["players"], [{"user_id": players[0]["user_id"], "flowers": 10},
+                                             {"user_id": players[1]["user_id"], "flowers": 0}])
+        self.assertEqual(self.db.query(AssetTransaction).count(), 0)
+
+    def test_player_balances_reject_other_accounts_and_gift_tokens(self):
+        players = [{"user_id": self.claims["sender_game_id"], "portal_user_id": 1}]
+        good = self.token(purpose="flower-balances", iss="main-portal:flower-balances", players=players)
+        with self.assertRaises(HTTPException):
+            player_balances(self.db, 2, good)
+        with self.assertRaises(HTTPException):
+            player_balances(self.db, 1, self.token())
+        for invalid in ([], players * 3, [{"user_id": "bad", "portal_user_id": 1}],
+                        [{"user_id": self.claims["sender_game_id"], "portal_user_id": True}]):
+            with self.subTest(players=invalid), self.assertRaises(HTTPException):
+                player_balances(self.db, 1, self.token(purpose="flower-balances",
+                    iss="main-portal:flower-balances", players=invalid))
+
+    def test_unlinked_player_balance_is_unknown_not_zero(self):
+        player = {"user_id": self.claims["recipient_game_id"], "portal_user_id": None}
+        result = player_balances(self.db, 1, self.token(purpose="flower-balances",
+            iss="main-portal:flower-balances", players=[player]))
+        self.assertIsNone(result["players"][0]["flowers"])
 
 
 if __name__ == "__main__":
