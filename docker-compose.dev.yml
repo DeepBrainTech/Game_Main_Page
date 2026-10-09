@@ -48,7 +48,7 @@ services:
       - PORT=8000
       - DEBUG=true
       - ENVIRONMENT=development
-      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://frontend:3000,http://localhost:5173}
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/main_page_db
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=dev-secret-key-change-in-production-please
