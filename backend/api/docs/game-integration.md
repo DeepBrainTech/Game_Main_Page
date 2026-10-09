@@ -204,7 +204,19 @@ QuantumGo 前端已改为 GET /api/games/quantumgo/purchases/ai-review/quote 和
 
 QuantumGo 只注册 /ai/review/*，登录只使用 /api/v1/users/verify-token。双方后端统一使用 QUANTUMGO_JWT_SECRET、QUANTUMGO_JWT_AUD、QUANTUMGO_JWT_ISS；算法为 HS256。旧复盘兑换地址、旧请求头、旧复盘别名和 /jwtLogin 已移除，不能回退。
 
-## 8. 错误处理
+## 8. QuantumGo 鲜花转赠
+
+主站提供 `GET /api/games/quantumgo/flowers/balance`、`POST /api/games/quantumgo/flowers/transfers` 和 `GET /api/games/quantumgo/flowers/transfers/{request_id}`，均要求主站登录 Cookie，响应禁止缓存。
+
+转赠请求只有 `intent_token`。该意向由 QuantumGo 后端签发，包含双方主站 ID、游戏用户 UUID、房间 UUID、数量（1/5/10）、请求 UUID 和观众资格；purpose 为 `flower-intent`，issuer 为现有 `QUANTUMGO_JWT_ISS` 加 `:flower-intent` 后缀，有效期 60 秒。主站验证签名、登录账户、用途和参数，按用户 ID 顺序锁住双方账户，复用统一资产服务在同一事务中扣除和增加鲜花，并保存双方资产流水及可重放操作。允许反复互送，禁止自送，不变动钻石和金币。
+
+成功响应包含原始请求信息、赠送者最新资产和 `receipt_token`。到账凭证 purpose 为 `flower-receipt`，使用原有主站 issuer；围棋站只接受该凭证确认到账。重试查询可以重新签发凭证，不重复转账。相同 UUID 修改数量或接收者返回 409。
+
+热度由 QuantumGo 后端根据对局参与者身份校验：只有进行中对局的观众赠送计入热度，每朵 1 点；棋手互送和赛后赠送只转账。到账及热度确认都必须保留请求 UUID。两端沿用 AI Review 的签名配置和跨站 Cookie 设置；需同步部署主站后端、QuantumGo 后端与前端。
+
+转账测试：`python -m unittest discover -s tests -p test_flower_gifts.py -v`，使用内存 SQLite，不连接主站数据库；覆盖重复请求、反复互送、余额不足、到账失败回滚和凭证边界。PostgreSQL 行锁并发仍需独立环境验证。
+
+## 9. 错误处理
 
 - 401：未登录／Cookie 不可用，引导用户登录主站。
 - 400 insufficient_assets：刷新余额，展示资产不足。

@@ -7,10 +7,12 @@ from auth import get_current_active_user
 from database import get_db
 from models import User
 from routes.game_purchases import router as game_purchase_router
+from routes.flower_gifts import router as flower_gift_router
 from schemas import APIResponse, GamePlayRecordIn
 from services import game_activity, game_likes, game_sessions, inventory
 
 router = APIRouter(prefix="/api/games", tags=["Games"])
+router.include_router(flower_gift_router)
 
 
 @router.get("/shop/catalog", response_model=APIResponse)
